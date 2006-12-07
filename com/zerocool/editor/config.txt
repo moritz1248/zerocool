@@ -1,4 +1,0 @@
-FilePath=*\Apps\com\zerocool\editor\levels\
-ItemPath=*\Apps\com\zerocool\editor\items
-HelpPath=*\Apps\com\zerocool\editor\help.txt
-
