@@ -145,7 +145,7 @@ public class ZeroCoolApp extends SimpleGame{
 	    rootNode.attachChild(userCamera.getNode());
 	    
 	    //Get the level and add it to the root node
-	    level.load("C:\\src\\Zero Cool\\Apps\\com\\zerocool\\editor\\levels\\test2");
+	    level.load("nApps\\com\\zerocool\\editor\\levels\\test2");
 	    rootNode.attachChild(level);
 	    
 	    item = new ItemObject(02, L);
