@@ -6,6 +6,8 @@ import org.lwjgl.input.Keyboard;
 
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
+import com.jme.scene.Spatial;
+import com.jme.scene.shape.Sphere;
 import com.zerocool.scene.camera.UserCamera;
 
 /**

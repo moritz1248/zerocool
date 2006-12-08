@@ -1,5 +1,7 @@
 package com.zerocool.scene.level;
 
+import com.jme.math.Vector3f;
+import com.jme.scene.shape.Box;
 import com.zerocool.scene.GameObject;
 
 /**
@@ -42,6 +44,7 @@ public class TileObject extends GameObject
 	{
 		super(id, x, y, z, orient);
 		this.type = type;
+		//setRenderObject(new Box("tile", new Vector3f(getX()*10-5, getY()*10-5, getZ()*10-5), new Vector3f(getX()*10+5, getY()*10+5, getZ()*10+5)));
 	}
 	
 	/**
