@@ -1,4 +1,5 @@
 package com.zerocool.scene;
+import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import com.zerocool.scene.level.TileObject;
 
@@ -12,10 +13,9 @@ import com.zerocool.scene.level.TileObject;
  */
 import java.io.Serializable;
  
-public class GameObject extends UpdatableNode implements Serializable
+public class GameObject extends RenderableObject implements Serializable
 {
 	final int OBJECT_ID;
-	float x,y,z;
 	private int orientation;
 	
 
@@ -33,9 +33,9 @@ public class GameObject extends UpdatableNode implements Serializable
 	public GameObject(int id, float pX, float pY, float pZ, int orient)
 	{
 		OBJECT_ID = id;
-		x = pX;
-		y = pY;
-		z = pZ;
+		setX(pX);
+		setY(pY);
+		setZ(pZ);
 		orientation = orient;
 	}
 	
@@ -43,11 +43,11 @@ public class GameObject extends UpdatableNode implements Serializable
 	{
 		System.out.println("Cloning GameObject type: " + getType());
 		if(getType() == -1)
-			return new DynamicGameObject(id, x, y, z, orientation, null, null);
+			return new DynamicGameObject(id, getX(), getY(), getZ(), orientation, null, null);
 		else if(getType() > 0)
-			return new TileObject(id, getType(), x, y, z, orientation);
+			return new TileObject(id, getType(), getX(), getY(), getZ(), orientation);
 		else
-			return new GameObject(id, x, y, z, orientation);
+			return new GameObject(id, getX(), getY(), getZ(), orientation);
 	}
 	
 	/**
@@ -56,46 +56,8 @@ public class GameObject extends UpdatableNode implements Serializable
 	 */
 	public int getType(){return 0;}
 	
-	/**
-	 * <code>getX</code> returns the x coordinate.
-	 * @return x
-	 */
-	public float getX(){return x;}
+
 	
-	
-	/**
-	 * <code>getY</code> returns the y coordinate.
-	 * @return y
-	 */
-	public float getY(){return y;}
-	
-	
-	/**
-	 * <code>getZ</code> returns the z coordinate.
-	 * @return z
-	 */
-	public float getZ(){return z;}
-	
-	
-	/**
-	 * <code>setX</code> sets the x coordinate
-	 * @param x
-	 */
-	public void setX(float x){this.x=x;}
-	
-	
-	/**
-	 * <code>setY</code> sets the y coordinate
-	 * @param y
-	 */
-	public void setY(float y){this.y=y;}
-	
-	
-	/**
-	 * <code>setZ</code> sets the z coordinate
-	 * @param z
-	 */
-	public void setZ(float z){this.z=z;}
 
 
 	@Override
