@@ -46,7 +46,7 @@ public class Level extends Node{
 				for(int j = 0; j < level.get(i).size(); j++){
 					TileObject tile = level.get(i).get(j);
 					//Box b = new Box("tile-" + i + "-" +  j, new Vector3f(tile.getX()*10-5, tile.getY()*10-5, tile.getZ()*10-5), new Vector3f(tile.getX()*10+5, tile.getY()*10+5, tile.getZ()*10+5));
-					attachChild(tile);
+					attachChild(new TileObject(tile));
 				}
 			}
 		}		

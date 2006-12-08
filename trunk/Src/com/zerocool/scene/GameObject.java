@@ -30,6 +30,11 @@ public class GameObject extends RenderableObject implements Serializable
 		orientation = 1;
 	}
 	
+	protected int getID() {
+		// TODO Auto-generated method stub
+		return OBJECT_ID;
+	}
+	
 	public GameObject(int id, float pX, float pY, float pZ, int orient)
 	{
 		OBJECT_ID = id;

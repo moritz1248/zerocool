@@ -6,8 +6,11 @@ import org.lwjgl.input.Keyboard;
 
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
+import com.jme.renderer.ColorRGBA;
 import com.jme.scene.Spatial;
 import com.jme.scene.shape.Sphere;
+import com.jme.scene.state.MaterialState;
+import com.jme.system.DisplaySystem;
 import com.zerocool.scene.camera.UserCamera;
 
 /**
@@ -29,8 +32,14 @@ public class PlayerObject extends DynamicGameObject{
 	 * The ID numbers 0 to 32 are reserved for players.
 	 * @param player_ID
 	 */
-	public PlayerObject(int player_ID, LuaState l) {
+	public PlayerObject(int player_ID, LuaState l, MaterialState ms) {
 		super(player_ID, null, null);
+
+	    Vector3f min = new Vector3f(-5, 5, -5);
+	    Vector3f max = new Vector3f(5, 15, 5);
+	    Sphere s = new Sphere("Cylinder", 20, 20, 5);
+	    s.setRenderState(ms);
+		setRenderObject(s);
 	}
 	
 	
@@ -100,12 +109,12 @@ public class PlayerObject extends DynamicGameObject{
 		if(new Vector3f(0,0,0).distance(velocity) > 1){
 			velocity =velocity.normalize().mult(1);
 		}
-		if(getLocalTranslation().x < -9*10 || getLocalTranslation().x > 8*10){
+		/*if(getLocalTranslation().x < -9*10 || getLocalTranslation().x > 8*10){
 			velocity.x *=-1;
 		}
 		if(getLocalTranslation().z < -9*10 || getLocalTranslation().z > 8*10){
 			velocity.z *=-1;
-		}
+		}*/
 		
 	}
 	@Override
