@@ -60,7 +60,7 @@ public class ZeroCoolApp extends SimpleGame{
 	/*
 	 * PLAYER VARIABLES
 	 */
-	PlayerObject player = new PlayerObject(0, L);
+	PlayerObject player;
 	
 	/*
 	 * SERVER VARIABLES
@@ -119,18 +119,10 @@ public class ZeroCoolApp extends SimpleGame{
 		
 		//Add the consol to the screen
 		fpsNode.attachChild(console.returnNode());
-		
-		//A box
-	    Vector3f min = new Vector3f(-5, 5, -5);
-	    Vector3f max = new Vector3f(5, 15, 5);
-	    Sphere s = new Sphere("Cylinder", 20, 20, 5);
-	    
-	    //Initialize the camera
-	    createCamera();
+	
 
 	    //Add the box to the root node
-	    player.setLocalTranslation(new Vector3f(100,10,100));
-	    player.addChildCamera(userCamera);
+
 	    //s.setLocalTranslation(new Vector3f(0,10,0));
 	    MaterialState ms = display.getRenderer().createMaterialState();
 	    ms.setAmbient(new ColorRGBA(0.0f,0.0f,0.5f,0.5f));
@@ -138,10 +130,13 @@ public class ZeroCoolApp extends SimpleGame{
 	    ms.setDiffuse(new ColorRGBA(0,1,0,0.5f));
 	    ms.setSpecular(new ColorRGBA(1,1,0,0.5f));
 	    ms.setShininess(100);
-	    s.setRenderState(ms);
-	    player.attachChild(s);
+	    
+	    player = new PlayerObject(0, L, ms);
+	    
+	    player.setLocalTranslation(new Vector3f(100,10,100));
+	    player.addChildCamera(userCamera);
 	    rootNode.attachChild(player);
-	    rootNode.attachChild(userCamera.getNode());
+	    
 	    
 	    //Get the level and add it to the root node
 	    level.load("Data\\levels\\test2");
@@ -149,6 +144,9 @@ public class ZeroCoolApp extends SimpleGame{
 	    
 	    item = new ItemObject(02, L);
 	    
+	    //Initialize the camera
+	    createCamera();
+	    rootNode.attachChild(userCamera.getNode());
 	}
 	
 	
