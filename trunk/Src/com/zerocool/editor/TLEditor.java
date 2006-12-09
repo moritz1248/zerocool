@@ -366,7 +366,7 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 	}
 	public void open()
 	{
-		int choice = JOptionPane.showConfirmDialog(this, "Do you want to the current level first?", "Save?", JOptionPane.YES_NO_OPTION);
+		int choice = JOptionPane.showConfirmDialog(this, "Do you want to save the current level first?", "Save?", JOptionPane.YES_NO_OPTION);
 		if(choice == JOptionPane.YES_OPTION)
 			saved();
 		JFileChooser chooser = new JFileChooser(lastAccessed);
