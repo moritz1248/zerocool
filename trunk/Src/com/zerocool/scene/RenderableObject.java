@@ -12,7 +12,7 @@ public class RenderableObject extends UpdatableNode {
 	}
 	
 	@Override
-	void Update(int elapsed) {
+	public void Update(int elapsed) {
 		// TODO Auto-generated method stub
 		
 	}
