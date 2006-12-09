@@ -1,6 +1,7 @@
 package com.zerocool.scene;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
+import com.jme.scene.shape.Box;
 import com.zerocool.scene.level.TileObject;
 
 /**
@@ -35,6 +36,7 @@ public class GameObject extends RenderableObject implements Serializable
 		return OBJECT_ID;
 	}
 	
+	
 	public GameObject(int id, float pX, float pY, float pZ, int orient)
 	{
 		OBJECT_ID = id;
@@ -62,7 +64,12 @@ public class GameObject extends RenderableObject implements Serializable
 	public int getType(){return 0;}
 	
 
-	
+	public void convertTileInformation() {
+		setX(getX()* 10);
+		setY(getY() * 10);
+		setZ(getZ() * 10);
+		setRenderObject(new Box("tile", new Vector3f(-5, -5, -5), new Vector3f(5, 5, 5)));
+	}
 
 
 	@Override
@@ -81,4 +88,5 @@ public class GameObject extends RenderableObject implements Serializable
 	 * @param orientation
 	 */
 	public void setOrientation(int orientation){this.orientation = orientation;}
+	
 }
