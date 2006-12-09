@@ -25,11 +25,13 @@ import com.zerocool.managers.GameAction;
 import com.zerocool.managers.GameKeyAction;
 import com.zerocool.managers.InputManager;
 import com.zerocool.managers.State;
+import com.zerocool.scene.GameObject;
 import com.zerocool.scene.PlayerObject;
 import com.zerocool.scene.camera.UserCamera;
 import com.zerocool.scene.level.Level;
 
 import org.keplerproject.luajava.*;
+
 
 
 /**
@@ -136,7 +138,6 @@ public class ZeroCoolApp extends SimpleGame{
 	    player.setLocalTranslation(new Vector3f(100,10,100));
 	    player.addChildCamera(userCamera);
 	    rootNode.attachChild(player);
-	    
 	    
 	    //Get the level and add it to the root node
 	    level.load("Data\\levels\\test2");

@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
 
-import scene.GameObject;
+import com.zerocool.scene.GameObject;
 
 
 import com.jme.math.Vector3f;
@@ -45,6 +45,7 @@ public class Level extends Node{
 			for(int i = 0; i < level.size(); i++){
 				for(int j = 0; j < level.get(i).size(); j++){
 					GameObject go = level.get(i).get(j);
+					
 					go.convertTileInformation();
 					//Box b = new Box("tile-" + i + "-" +  j, new Vector3f(tile.getX()*10-5, tile.getY()*10-5, tile.getZ()*10-5), new Vector3f(tile.getX()*10+5, tile.getY()*10+5, tile.getZ()*10+5));
 					attachChild(go);

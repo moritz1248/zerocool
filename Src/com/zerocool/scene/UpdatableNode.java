@@ -4,6 +4,7 @@ package com.zerocool.scene;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import com.jme.scene.Spatial;
+import com.jme.scene.shape.Box;
 
 @SuppressWarnings("serial")
 public abstract class UpdatableNode extends Node {
@@ -49,4 +50,6 @@ public abstract class UpdatableNode extends Node {
 	 * @param z
 	 */
 	public void setZ(float z){localTranslation.z = z;}
+	
+
 }

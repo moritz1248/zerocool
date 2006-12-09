@@ -18,7 +18,6 @@ public class GameObject extends RenderableObject implements Serializable
 {
 	final int OBJECT_ID;
 	private int orientation;
-	
 
 	/**
 	 * public <code>GameObject</code> extends <code>Node</code> and is the upper level modifier
@@ -57,23 +56,26 @@ public class GameObject extends RenderableObject implements Serializable
 			return new GameObject(id, getX(), getY(), getZ(), orientation);
 	}
 	
+	public void convertTileInformation() {
+		setX(getX()* 10);
+		setY(getY() * 10);
+		setZ(getZ() * 10);
+		if(this instanceof TileObject)
+			setRenderObject(new Box("tile", new Vector3f(-5, -5, -5), new Vector3f(5, 5, 5)));
+		else if(this instanceof DynamicGameObject)
+			setRenderObject(new Box("tile", new Vector3f(-2, -2, -2), new Vector3f(2, 2, 2)));
+	}
+	
 	/**
 	 * <code>getType</code> returns the type.
 	 * @return type
 	 */
 	public int getType(){return 0;}
-	
 
-	public void convertTileInformation() {
-		setX(getX()* 10);
-		setY(getY() * 10);
-		setZ(getZ() * 10);
-		setRenderObject(new Box("tile", new Vector3f(-5, -5, -5), new Vector3f(5, 5, 5)));
-	}
 
 
 	@Override
-	void Update(int elapsed) {
+	public void Update(int elapsed) {
 		// TODO Auto-generated method stub
 		
 	}
