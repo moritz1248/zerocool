@@ -15,13 +15,13 @@ import com.jme.scene.shape.Box;
 
 @SuppressWarnings("serial")
 public class Level extends Node{
-	protected ArrayList<ArrayList<TileObject>> level;
+	protected ArrayList<ArrayList<GameObject>> level;
 	public void load(String filename){
 		
 		if(filename != null)
 	    {
 			if(level == null){
-				level = new ArrayList<ArrayList<TileObject>>();
+				level = new ArrayList<ArrayList<GameObject>>();
 			}
 	    	File file = new File(filename);
 			//this code opens the file
@@ -29,7 +29,7 @@ public class Level extends Node{
 			{
 				FileInputStream fileIS = new FileInputStream(file);
 				ObjectInputStream inStream = new ObjectInputStream(fileIS);
-				ArrayList<ArrayList<TileObject>> newLevel = (ArrayList)inStream.readObject();
+				ArrayList<ArrayList<GameObject>> newLevel = (ArrayList)inStream.readObject();
 				if(newLevel != null)
 					level = newLevel;
 			}
@@ -44,9 +44,10 @@ public class Level extends Node{
 			}
 			for(int i = 0; i < level.size(); i++){
 				for(int j = 0; j < level.get(i).size(); j++){
-					TileObject tile = level.get(i).get(j);
+					GameObject go = level.get(i).get(j);
+					go.convertTileInformation();
 					//Box b = new Box("tile-" + i + "-" +  j, new Vector3f(tile.getX()*10-5, tile.getY()*10-5, tile.getZ()*10-5), new Vector3f(tile.getX()*10+5, tile.getY()*10+5, tile.getZ()*10+5));
-					attachChild(new TileObject(tile));
+					attachChild(go);
 				}
 			}
 		}		

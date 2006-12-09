@@ -42,18 +42,11 @@ public class TileObject extends GameObject
 	
 	public TileObject(int id, int type, float x, float y, float z, int orient)
 	{
-		super(id, x*10, y*10, z*10, orient);
+		super(id, x, y, z, orient);
 		this.type = type;
-		setRenderObject(new Box("tile", new Vector3f(-5, -5, -5), new Vector3f(5, 5, 5)));
+		//setRenderObject(new Box("tile", new Vector3f(-5, -5, -5), new Vector3f(5, 5, 5)));
 	}
 	
-	public TileObject(TileObject tile) {
-		super(tile.getID(), tile.getX() * 10, tile.getY() * 10, tile.getZ() * 10, tile.getOrientation());
-		setRenderObject(new Box("tile", new Vector3f(-5, -5, -5), new Vector3f(5, 5, 5)));
-	}
-
-
-
 	/**
 	 * <code>getType</code> returns the type of tile.
 	 * @return type;
