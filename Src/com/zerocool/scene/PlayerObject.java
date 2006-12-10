@@ -1,5 +1,7 @@
 package com.zerocool.scene;
 
+import java.io.File;
+
 import org.keplerproject.luajava.LuaState;
 import org.lwjgl.input.Keyboard;
 
@@ -7,10 +9,13 @@ import org.lwjgl.input.Keyboard;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
+import com.jme.scene.Node;
 import com.jme.scene.Spatial;
 import com.jme.scene.shape.Sphere;
 import com.jme.scene.state.MaterialState;
 import com.jme.system.DisplaySystem;
+//import com.jmex.model.util.ModelLoader;
+import com.zerocool.model.ModelLoader;
 import com.zerocool.scene.camera.UserCamera;
 
 /**
@@ -25,7 +30,7 @@ public class PlayerObject extends DynamicGameObject{
 	private UserCamera camera;
 	private float angle = 0;
 	private Vector3f velocity = new Vector3f(0,0,0);
-	
+	ModelLoader loader = new ModelLoader();
 	
 	/**
 	 * public <code>PlayerObject</code> initializes the player object and sets the player's id.
@@ -40,7 +45,12 @@ public class PlayerObject extends DynamicGameObject{
 	    Sphere s = new Sphere("Cylinder", 20, 20, 5);
 	    s.setRenderState(ms);
 		setRenderObject(s);*/
-		loadModel("Data\\models\\hover1.3DS");
+		/*Node node = ModelLoader.loadModel(new File("Data\\models\\hover1.3DS"));
+		if(node == null){
+			System.out.println("Problem!");
+		}
+		setRenderObject(node);*/
+		setRenderObject(loader.loadModel("Data\\models\\hover1.3DS"));
 	}
 	
 	
