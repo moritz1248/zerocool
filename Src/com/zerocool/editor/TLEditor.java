@@ -58,6 +58,7 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 	public TLEditor()
 	{
 		reportOn = true;
+		System.out.println(reportOn);
 		
 		objEdit = new ObjectEditor();
 		
@@ -320,37 +321,45 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 	}
 	public void setLayer()
 	{
-		String input = JOptionPane.showInputDialog(this, "Type in the desired dimensions of the level (width,height no spaces)", "20,20");
-		int index = input.indexOf(',');
-		int x = Integer.parseInt(input.substring(0, index));
-		int z = Integer.parseInt(input.substring(index + 1, input.length()));
-		level.set(layer, new ArrayList());
-		selected = null;
-		for(int a = 1; a < x - 1; a++)
+		String input = JOptionPane.showInputDialog(this, "Type in the desired dimensions of the level (width,height)", "20,20");
+		report(input);
+		if(input != null && input.indexOf(',') > 0)
 		{
-			TileObject t1 = new TileObject(nextId(), 1, a, layer, 0, 1);
-			TileObject t2 = new TileObject(nextId(), 1, a, layer, z - 1, 1);
-			level.get(layer).add(t1);
-			level.get(layer).add(t2);
+			int index = input.indexOf(',');
+			int index2 = input.indexOf(' ');
+			if(index2 < index && index2 > 0)
+				index = index2;
+			int x = Integer.parseInt(input.substring(0, index));
+			while(input.charAt(index) < '0' || input.charAt(index) > '9') index++;
+			int z = Integer.parseInt(input.substring(index, input.length()));
+			level.set(layer, new ArrayList<GameObject>());
+			selected = null;
+			for(int a = 1; a < x - 1; a++)
+			{
+				TileObject t1 = new TileObject(nextId(), 1, a, layer, 0, 1);
+				TileObject t2 = new TileObject(nextId(), 1, a, layer, z - 1, 1);
+				level.get(layer).add(t1);
+				level.get(layer).add(t2);
+			}
+			for(int a = 1; a < z - 1; a++)
+			{
+				TileObject t3 = new TileObject(nextId(), 1, 0, layer, a, 1);
+				TileObject t4 = new TileObject(nextId(), 1, x - 1, layer, a, 1);
+				level.get(layer).add(t3);
+				level.get(layer).add(t4);
+			}
+			TileObject corner1 = new TileObject(nextId(), 1, 0, layer, 0, 1);
+			TileObject corner2 = new TileObject(nextId(), 1, x - 1, layer, z - 1, 1);
+			TileObject corner3 = new TileObject(nextId(), 1, 0, layer, z - 1, 1);
+			TileObject corner4 = new TileObject(nextId(), 1, x - 1, layer, 0, 1);
+			level.get(layer).add(corner1);
+			level.get(layer).add(corner2);
+			level.get(layer).add(corner3);
+			level.get(layer).add(corner4);
+			layerView.setCorner(0, 0);
+			compositeView.setCorner(0, 0);
+			report("Level reset");
 		}
-		for(int a = 1; a < z - 1; a++)
-		{
-			TileObject t3 = new TileObject(nextId(), 1, 0, layer, a, 1);
-			TileObject t4 = new TileObject(nextId(), 1, x - 1, layer, a, 1);
-			level.get(layer).add(t3);
-			level.get(layer).add(t4);
-		}
-		TileObject corner1 = new TileObject(nextId(), 1, 0, layer, 0, 1);
-		TileObject corner2 = new TileObject(nextId(), 1, x - 1, layer, z - 1, 1);
-		TileObject corner3 = new TileObject(nextId(), 1, 0, layer, z - 1, 1);
-		TileObject corner4 = new TileObject(nextId(), 1, x - 1, layer, 0, 1);
-		level.get(layer).add(corner1);
-		level.get(layer).add(corner2);
-		level.get(layer).add(corner3);
-		level.get(layer).add(corner4);
-		layerView.setCorner(0, 0);
-		compositeView.setCorner(0, 0);
-		report("Level reset");
 		repaint();
 	}
 	//allows the coder to turn on or off the output
