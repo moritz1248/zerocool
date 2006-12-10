@@ -35,11 +35,12 @@ public class PlayerObject extends DynamicGameObject{
 	public PlayerObject(int player_ID, LuaState l, MaterialState ms) {
 		super(player_ID, null, null);
 
-	    Vector3f min = new Vector3f(-5, 5, -5);
+	    /*Vector3f min = new Vector3f(-5, 5, -5);
 	    Vector3f max = new Vector3f(5, 15, 5);
 	    Sphere s = new Sphere("Cylinder", 20, 20, 5);
 	    s.setRenderState(ms);
-		setRenderObject(s);
+		setRenderObject(s);*/
+		loadModel("Data\\models\\hover1.3DS");
 	}
 	
 	
