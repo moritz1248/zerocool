@@ -6,6 +6,7 @@ import org.lwjgl.input.Keyboard;
 
 
 import com.jme.app.SimpleGame;
+import com.jme.light.LightNode;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.renderer.Camera;
@@ -132,6 +133,8 @@ public class ZeroCoolApp extends SimpleGame{
 	    ms.setDiffuse(new ColorRGBA(0,1,0,0.5f));
 	    ms.setSpecular(new ColorRGBA(1,1,0,0.5f));
 	    ms.setShininess(100);
+	    
+	    
 	    
 	    player = new PlayerObject(0, L, ms);
 	    
