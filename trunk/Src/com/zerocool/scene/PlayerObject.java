@@ -50,7 +50,7 @@ public class PlayerObject extends DynamicGameObject{
 			System.out.println("Problem!");
 		}
 		setRenderObject(node);*/
-		setRenderObject(loader.loadModel("Data\\models\\hover1.3DS"));
+		setRenderObject(loader.loadModel("Data\\models\\hover1.3DS", "H1_TEX.BMP"));
 	}
 	
 	

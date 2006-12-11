@@ -18,7 +18,7 @@ public class ModelLoader {
 	ByteArrayOutputStream bytearrayoutputstream = new ByteArrayOutputStream();
 	Node node = new Node();
 	
-	public Node loadModel(String filename){
+	public Node loadModel(String filename, String texture){
 		
 	InputStream is = null;
 	try {
@@ -37,8 +37,7 @@ public class ModelLoader {
 	    // Used to convert the jme usable file to a TriMesh
 	    BinaryImporter binaryImporter = new BinaryImporter(); 
 	    ByteArrayInputStream in=new ByteArrayInputStream(bytearrayoutputstream.toByteArray());
-	    TextureKey.setOverridingLocation(new URL("file:/C:\\zerocool\\Zero Cool\\Data\\models\\H1_TEX.BMP"));
-	    
+	    TextureKey.setOverridingLocation(new URL("file:/" + System.getProperty("user.dir") + "\\Data\\textures\\" + texture));
 	    //importer returns a Loadable, cast to Node
 	    node = (Node)binaryImporter.load(in); 
 	    
