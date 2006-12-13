@@ -1,8 +1,10 @@
 package com.zerocool.scene;
+
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import com.jme.scene.shape.Box;
 import com.zerocool.scene.level.TileObject;
+import java.io.Serializable;
 
 /**
  * <code>GameObject</code> Is the overhead for all objects within the application, static or dynamic. 
@@ -12,7 +14,6 @@ import com.zerocool.scene.level.TileObject;
  * @author Chris Gibson
  * @version GameObject.java,v 0.1 2006/10/03
  */
-import java.io.Serializable;
  
 public class GameObject extends RenderableObject implements Serializable
 {
