@@ -784,15 +784,10 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 	}
 	private GameObject objectAt(int x, int z)
 	{
-		ArrayList lyr = level.get(layer);
-			for(int c = 0; c < lyr.size(); c++)
-			{
-				GameObject go = (GameObject)lyr.get(c);
-				if((int)go.getX() == x && (int)go.getZ() == z)
-				{
-					return go;
-				}
-			}
+		ArrayList<GameObject> lyr = level.get(layer);
+		for(GameObject go : lyr)
+			if((int)go.getX() == x && (int)go.getZ() == z)
+				return go;
 		return null;
 	}
 	public void edited(GameObject newGO)
@@ -863,9 +858,7 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 		public void syncronize()
 		{
 			if(brother != null && syncronize.isSelected())
-			{
 				brother.setCorner(xCorner, zCorner);
-			}
 			parent.repaint();
 		}
 		
@@ -986,7 +979,7 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 		public void drawLayer(int layerNum, boolean isSingle, Graphics g)
 		{
 			//draw all objects which reside in the current layer
-			ArrayList layer = level.get(layerNum);
+			ArrayList<GameObject> layer = level.get(layerNum);
 			//shade is the highest shade used for this layer
 			int shade;
 			if(isSingle)
@@ -999,9 +992,8 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 				interval = 206;
 			else
 				interval = 206 / level.size();
-			for(int c = 0; c < layer.size(); c++)
+			for(GameObject tile : layer)
 			{
-				GameObject tile = (GameObject)layer.get(c);
 				int type = tile.getType();
 				int orientation = tile.getOrientation();
 				int x = ((int)tile.getX() - xCorner) * 25;
@@ -1311,8 +1303,8 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 			//add code to look in the specified folder (path) for any and all DynamicGameObject .zci files
 			File[] all = path.listFiles();
 			System.out.println("all files of parent dir " + path.toString() + " :: ");
-			for(int c = 0; c < all.length; c++)
-				System.out.println(all[c].toString());
+			for(File each : all)
+				System.out.println(each.toString());
 			return path.listFiles(new CustomFNF(".zci"));
 		}
 		
