@@ -42,6 +42,14 @@ public class Level extends Node{
 			{
 				System.out.println("ClassNotFoundException thrown while trying to open level " + file + ";  Exception caught");
 			}
+			//you can use for each here
+			//for(GameObject go : level)
+			//shmaybe
+			//or even
+			//for(ArrayList<GameObject> layer : level)
+			//   for(GameObject go : layer)
+			//whatever
+			//-jon
 			for(int i = 0; i < level.size(); i++){
 				for(int j = 0; j < level.get(i).size(); j++){
 					GameObject go = level.get(i).get(j);
