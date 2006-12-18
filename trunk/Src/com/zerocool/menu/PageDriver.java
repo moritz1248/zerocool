@@ -6,19 +6,28 @@ import java.awt.Graphics;
 import java.awt.event.MouseEvent;
 import javax.swing.event.MouseInputListener;
 import javax.swing.JPanel;
+import java.util.ArrayList;
 
 //so far this is just the outline of what it's going to look like
-//i'm going to create a level editor which will make it so we can
+//i'm going to create a menu editor which will make it so we can
 //easily fine tune and/or redo the menu system at a moments notice
 public class PageDriver extends JPanel implements MouseInputListener 
 {
 	//all that crap here
+	private ArrayList<ZCpage> pages;
+	private ZCpage current;
 	
 	public PageDriver() 
 	{
 		//and more to add
 	}
 
+	public void paint(Graphics g)
+	{
+		//whoa, actual code...shunness
+		if(current != null)
+			current.draw();
+	}
 	
 	public void mouseClicked(MouseEvent arg0) 
 	{
@@ -58,6 +67,11 @@ public class PageDriver extends JPanel implements MouseInputListener
 		private ZCpage()
 		{
 		}
+		
+		public void draw(Graphics g)
+		{
+			//draw it
+		}
 	}
 	//holds all the data for a page
 	private class ZCproperties //probably not though
@@ -65,6 +79,7 @@ public class PageDriver extends JPanel implements MouseInputListener
 		private ZCproperties()
 		{
 		}
+		//mro...i don't have a draw method
 	}
 	
 	//why use an action class???
