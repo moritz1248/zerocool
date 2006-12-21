@@ -1480,7 +1480,7 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 				if(type == 6)
 				{
 					type = -1;
-					after = new DynamicGameObject(nextId(), after.getX(), after.getY(), after.getZ(), after.getOrientation(), null, null);
+					after = new DynamicGameObject(nextId(), after.getX(), after.getY(), after.getZ(), after.getOrientation(), null);
 					fileL.setVisible(true);
 					fileCB.setVisible(true);
 				}

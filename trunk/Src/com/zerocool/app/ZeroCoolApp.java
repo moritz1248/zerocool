@@ -50,10 +50,6 @@ public class ZeroCoolApp extends SimpleGame{
 	InputManager input = new InputManager();
 	State applicationState = new State(0);
 	
-	/*
-	 * LUA LIBRARY VARIABLES
-	 */
-	LuaState L;
 	
 	/*
 	 * LEVEL VARIABLES
@@ -112,10 +108,6 @@ public class ZeroCoolApp extends SimpleGame{
 		//Set the title of the game
 		display.setTitle(GAME_TITLE);
 		
-		//Initialize the LUA libraries.
-		L = LuaStateFactory.newLuaState();
-		L.openBasicLibraries();
-		
 		//Initial Console messages
 		console.addText("Engine Initiated");
 		console.addText(GAME_TITLE + " v" + GAME_VERSION);
@@ -136,7 +128,7 @@ public class ZeroCoolApp extends SimpleGame{
 	    
 	    
 	    
-	    player = new PlayerObject(0, L, ms);
+	    player = new PlayerObject(0, ms);
 	    
 	    player.setLocalTranslation(new Vector3f(100,10,100));
 	    player.addChildCamera(userCamera);
@@ -146,7 +138,7 @@ public class ZeroCoolApp extends SimpleGame{
 	    level.load("Data\\levels\\test2");
 	    rootNode.attachChild(level);
 	    
-	    item = new ItemObject(02, L);
+	    item = new ItemObject(02);
 	    
 	    //Initialize the camera
 	    createCamera();
@@ -166,7 +158,7 @@ public class ZeroCoolApp extends SimpleGame{
 	    	    cam.update();
 	    
 	    //Creates the UserCamera
-	    userCamera = new UserCamera(new Vector3f(0,10,0),30, 120, new CameraNode("Camera Node", cam));
+	    userCamera = new UserCamera(new Vector3f(0,10,0),1, 120, new CameraNode("Camera Node", cam));
 	    
 	    //Adds to the root node [[[[ADD TO PLAYER NODE]]]]
 	    player.addChildCamera(userCamera);

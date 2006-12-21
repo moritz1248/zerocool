@@ -37,19 +37,9 @@ public class PlayerObject extends DynamicGameObject{
 	 * The ID numbers 0 to 32 are reserved for players.
 	 * @param player_ID
 	 */
-	public PlayerObject(int player_ID, LuaState l, MaterialState ms) {
-		super(player_ID, null, null);
+	public PlayerObject(int player_ID, MaterialState ms) {
+		super(player_ID, null);
 
-	    /*Vector3f min = new Vector3f(-5, 5, -5);
-	    Vector3f max = new Vector3f(5, 15, 5);
-	    Sphere s = new Sphere("Cylinder", 20, 20, 5);
-	    s.setRenderState(ms);
-		setRenderObject(s);*/
-		/*Node node = ModelLoader.loadModel(new File("Data\\models\\hover1.3DS"));
-		if(node == null){
-			System.out.println("Problem!");
-		}
-		setRenderObject(node);*/
 		setRenderObject(loader.loadModel("Data\\models\\hover1.3DS", "H1_TEX.BMP"));
 	}
 	
