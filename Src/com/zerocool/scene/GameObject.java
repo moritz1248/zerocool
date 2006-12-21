@@ -3,6 +3,7 @@ package com.zerocool.scene;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import com.jme.scene.shape.Box;
+import com.zerocool.model.ModelLoader;
 import com.zerocool.scene.level.TileObject;
 import java.io.Serializable;
 
@@ -50,7 +51,7 @@ public class GameObject extends RenderableObject implements Serializable
 	{
 		System.out.println("Cloning GameObject type: " + getType());
 		if(getType() == -1)
-			return new DynamicGameObject(id, getX(), getY(), getZ(), orientation, null, null);
+			return new DynamicGameObject(id, getX(), getY(), getZ(), orientation, null);
 		else if(getType() > 0)
 			return new TileObject(id, getType(), getX(), getY(), getZ(), orientation);
 		else
@@ -61,7 +62,9 @@ public class GameObject extends RenderableObject implements Serializable
 		setX(getX()* 10);
 		setY(getY() * 10);
 		setZ(getZ() * 10);
+		//ModelLoader loader = new ModelLoader();
 		if(this instanceof TileObject)
+			//setRenderObject(loader.loadModel("Data\\models\\hover1.3DS", "H1_TEX.BMP"));
 			setRenderObject(new Box("tile", new Vector3f(-5, -5, -5), new Vector3f(5, 5, 5)));
 		else if(this instanceof DynamicGameObject)
 			setRenderObject(new Box("tile", new Vector3f(-2, -2, -2), new Vector3f(2, 2, 2)));

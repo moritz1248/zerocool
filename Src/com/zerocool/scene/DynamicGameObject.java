@@ -20,25 +20,22 @@ public class DynamicGameObject extends GameObject
 	protected String script_file_create;
 	protected String script_file_think;
 	protected String script_file_destroy;
-	public LuaState L;
 	public File file;
 	
 	/**
 	 * public <code>DynamicGameObject</code> initializes the Game Object.
 	 * @param id
 	 */
-	public DynamicGameObject(int id, File source, LuaState L)
+	public DynamicGameObject(int id, File source)
 	{
 		super(id);
-		this.L = L;
 		file = source;
 		onCreate();
 	}
 	
-	public DynamicGameObject(int id, float x, float y, float z, int orient, File source, LuaState L)
+	public DynamicGameObject(int id, float x, float y, float z, int orient, File source)
 	{
 		super(id, x, y, z, orient);	
-		this.L = L;
 		file = source;
 	}
 	
