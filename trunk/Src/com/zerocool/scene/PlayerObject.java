@@ -39,8 +39,8 @@ public class PlayerObject extends DynamicGameObject{
 	 */
 	public PlayerObject(int player_ID, MaterialState ms) {
 		super(player_ID, null);
-		Node n = loader.loadModel("Data\\models\\hover1.3DS", "H1_TEX.BMP");
-		
+		Node n = loader.loadModel("Data\\models\\hover1.3DS");
+		n.setRenderState(ms);
 		setRenderObject(n);
 		this.setLocalScale(.5f);
 	}

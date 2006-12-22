@@ -6,6 +6,7 @@ import org.lwjgl.input.Keyboard;
 
 
 import com.jme.app.SimpleGame;
+import com.jme.bounding.*;
 import com.jme.light.LightNode;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
@@ -61,7 +62,7 @@ public class ZeroCoolApp extends SimpleGame{
 	 * PLAYER VARIABLES
 	 */
 	PlayerObject player;
-	
+	Box box_1;
 	/*
 	 * SERVER VARIABLES
 	 */
@@ -128,9 +129,15 @@ public class ZeroCoolApp extends SimpleGame{
 	    ms.setShininess(100);
 	    
 
-	    
+	    box_1 = new Box("box",new Vector3f(100,0,130), new Vector3f(80,40,140));
+	    rootNode.attachChild(box_1);
+	    //Create a new player object, controlled by the current user
 	    player = new PlayerObject(0, ms);
-
+	    
+//	  *******COLLISION WORK ***********//
+	    player.setModelBound(new BoundingBox());
+	    box_1.setModelBound(new BoundingBox());
+//	  *******COLLISION WORK ***********//
 	    
 	    player.setLocalTranslation(new Vector3f(100,10,100));
 	    player.addChildCamera(userCamera);
@@ -178,6 +185,14 @@ public class ZeroCoolApp extends SimpleGame{
 		item.Update(elapsed);
 		checkKeyboard(elapsed);
 		
+//		*******COLLISION WORK ***********//
+		player.updateModelBound();
+		box_1.updateModelBound();
+		rootNode.updateWorldBound();
+		if(box_1.getWorldBound().intersects(player.getWorldBound())){
+			System.out.println("Touching!");
+		}
+//		*******COLLISION WORK ***********//
 		if(isServer)
 		{
 			updateObjects(elapsed);

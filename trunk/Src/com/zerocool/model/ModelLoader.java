@@ -18,8 +18,7 @@ public class ModelLoader {
 	ByteArrayOutputStream bytearrayoutputstream = new ByteArrayOutputStream();
 	Node node = new Node();
 	
-	public Node loadModel(String filename, String texture){
-		
+	public Node loadModel(String filename){
 	InputStream is = null;
 	try {
 		is = new FileInputStream(new File(filename));
@@ -37,7 +36,7 @@ public class ModelLoader {
 	    // Used to convert the jme usable file to a TriMesh
 	    BinaryImporter binaryImporter = new BinaryImporter(); 
 	    ByteArrayInputStream in=new ByteArrayInputStream(bytearrayoutputstream.toByteArray());
-	    TextureKey.setOverridingLocation(new URL("file:/" + System.getProperty("user.dir") + "\\Data\\textures\\" + texture));
+	    TextureKey.setOverridingLocation(new URL("file:/" + System.getProperty("user.dir") + "\\Data\\textures\\"));
 	    //importer returns a Loadable, cast to Node
 	    node = (Node)binaryImporter.load(in); 
 	    
