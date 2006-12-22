@@ -14,7 +14,7 @@ import com.jme.scene.Spatial;
 import com.jme.scene.shape.Sphere;
 import com.jme.scene.state.MaterialState;
 import com.jme.system.DisplaySystem;
-//import com.jmex.model.util.ModelLoader;
+import com.jmex.physics.*;
 import com.zerocool.model.ModelLoader;
 import com.zerocool.scene.camera.UserCamera;
 
@@ -39,8 +39,10 @@ public class PlayerObject extends DynamicGameObject{
 	 */
 	public PlayerObject(int player_ID, MaterialState ms) {
 		super(player_ID, null);
-
-		setRenderObject(loader.loadModel("Data\\models\\hover1.3DS", "H1_TEX.BMP"));
+		Node n = loader.loadModel("Data\\models\\hover1.3DS", "H1_TEX.BMP");
+		
+		setRenderObject(n);
+		this.setLocalScale(.5f);
 	}
 	
 	
@@ -107,8 +109,8 @@ public class PlayerObject extends DynamicGameObject{
 		setLocalRotation(new Quaternion(new float[]{0,angle,0}));
 		setLocalTranslation(getLocalTranslation().add(velocity));
 		velocity = velocity.mult(.995f);
-		if(new Vector3f(0,0,0).distance(velocity) > 1){
-			velocity =velocity.normalize().mult(1);
+		if(new Vector3f(0,0,0).distance(velocity) > .6){
+			velocity =velocity.normalize().mult(.6f);
 		}
 		/*if(getLocalTranslation().x < -9*10 || getLocalTranslation().x > 8*10){
 			velocity.x *=-1;
