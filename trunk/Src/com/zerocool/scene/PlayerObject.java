@@ -14,7 +14,6 @@ import com.jme.scene.Spatial;
 import com.jme.scene.shape.Sphere;
 import com.jme.scene.state.MaterialState;
 import com.jme.system.DisplaySystem;
-import com.jmex.physics.*;
 import com.zerocool.model.ModelLoader;
 import com.zerocool.scene.camera.UserCamera;
 
