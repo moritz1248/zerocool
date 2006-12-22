@@ -18,6 +18,7 @@ import com.jme.scene.Text;
 import com.jme.scene.shape.Box;
 import com.jme.scene.shape.Cylinder;
 import com.jme.scene.shape.Sphere;
+import com.jme.scene.state.CullState;
 import com.jme.scene.state.MaterialState;
 import com.jme.util.LoggingSystem;
 import com.zerocool.console.ConsoleManager;
@@ -31,7 +32,7 @@ import com.zerocool.scene.PlayerObject;
 import com.zerocool.scene.camera.UserCamera;
 import com.zerocool.scene.level.Level;
 
-import org.keplerproject.luajava.*;
+import com.jmex.physics.*;
 
 
 
@@ -126,9 +127,10 @@ public class ZeroCoolApp extends SimpleGame{
 	    ms.setSpecular(new ColorRGBA(1,1,0,0.5f));
 	    ms.setShininess(100);
 	    
-	    
+
 	    
 	    player = new PlayerObject(0, ms);
+
 	    
 	    player.setLocalTranslation(new Vector3f(100,10,100));
 	    player.addChildCamera(userCamera);
@@ -193,6 +195,13 @@ public class ZeroCoolApp extends SimpleGame{
 	public void checkKeyboard(float elapsed)
 	{
 		if(Keyboard.isCreated()){
+			if(Keyboard.isKeyDown(Keyboard.KEY_Q)){
+				CullState cs = display.getRenderer().createCullState();
+				
+				cs.setCullMode(CullState.CS_FRONT);
+				rootNode.setRenderState(cs);
+				//rootNode.setCullMode(SceneElement.CULL_ALWAYS);
+			}
 			if(Keyboard.isKeyDown(Keyboard.KEY_W))
 				userCamera.setHeight(userCamera.getHeight() + (1f / elapsed));
 			if(Keyboard.isKeyDown(Keyboard.KEY_S))
