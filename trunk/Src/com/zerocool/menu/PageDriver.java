@@ -1,12 +1,13 @@
 package com.zerocool.menu;
-
-import java.awt.Graphics;
-//import java.awt.Graphics2D;  
-//good class to have, if you want to do advanced visuals
+ 
 import java.awt.event.MouseEvent;
 import javax.swing.event.MouseInputListener;
 import javax.swing.JPanel;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.io.Serializable;
+import java.awt.*;
+import java.awt.image.BufferedImage;;
 
 //so far this is just the outline of what it's going to look like
 //i'm going to create a menu editor which will make it so we can
@@ -19,184 +20,74 @@ public class PageDriver extends JPanel implements MouseInputListener
 	
 	public PageDriver() 
 	{
-		//and more to add
+		//window specifications
+		setPreferredSize(new Dimension(800, 600));
+		addMouseListener(this);
+		addMouseMotionListener(this);
+		
+		//load from file
+		pages = loadPages();
+		if(pages != null && pages.size() > 0)
+			current = pages.get(0);
+		else
+			System.out.println("Error: no input read");
+		
+		//test code
+		current = new ZCpage();
+		ZCselector s1 = new ZCselector();
+		ZCslider s2 = new ZCslider();
+		current.add(s1);
+		current.add(s2);
+		pages.add(current);
 	}
 
 	public void paint(Graphics g)
 	{
-		//whoa, actual code...shunness
+		//can i get the current size of the window easily?
+		//i don't want to have to initialize screen and g2 every time
+		//create global variables...later
+		BufferedImage screen = new BufferedImage(800, 600, BufferedImage.TYPE_3BYTE_BGR);
+		Graphics2D g2 = (Graphics2D)screen.getGraphics();
+		g2.setColor(Color.gray);
+		g2.fill(new Rectangle(0, 0, 800, 600));
 		if(current != null)
-			current.draw();
+			current.draw(g2);
+		g.drawImage(screen, 0, 0, null);
 	}
 	
-	public void mouseClicked(MouseEvent arg0) 
+	public ArrayList<ZCpage> loadPages()
 	{
-	}
-	public void mouseEntered(MouseEvent arg0) 
-	{
-	}
-	public void mouseExited(MouseEvent arg0) 
-	{
-	}
-	public void mousePressed(MouseEvent arg0) 
-	{
-	}
-	public void mouseReleased(MouseEvent arg0)
-	{
-	}
-	public void mouseDragged(MouseEvent arg0)
-	{
-	}
-	public void mouseMoved(MouseEvent arg0) 
-	{
+		return new ArrayList<ZCpage>();
 	}
 	
-	//***INTERNAL CLASSES BEYOND THIS POINT***//
-	
-	//anything that can be drawn and/or used.
-	public interface ZCcomponent
+	public void mouseClicked(MouseEvent m) 
 	{
-		boolean isMousified(int x, int y);
-		boolean isVisible();
-		int getState();
-		void draw(Graphics g);
+		current.mousifyAll(m.getX(), m.getY(), 0);
+		System.out.println("mouse clicked at: " + m.getX() + "-" + m.getY());
+		repaint();
 	}
-	//holds all the components for a page as well as a properties object
-	private class ZCpage //deciding whether or not to make it a ZCcomponent
+	public void mouseMoved(MouseEvent m) 
 	{
-		private ZCpage()
-		{
-		}
-		
-		public void draw(Graphics g)
-		{
-			//draw it
-		}
+		current.mousifyAll(m.getX(), m.getY(), 1);
+		repaint();
 	}
-	//holds all the data for a page
-	private class ZCproperties //probably not though
+	public void mouseDragged(MouseEvent m)
 	{
-		private ZCproperties()
-		{
-		}
-		//mro...i don't have a draw method
+		current.mousifyAll(m.getX(), m.getY(), 2);
+		repaint();
 	}
-	
-	//why use an action class???
-	
-	//will allow a user to use a button
-	private class ZCbutton implements ZCcomponent
+	public void mousePressed(MouseEvent m) 
 	{
-		private ZCbutton()
-		{
-		}
-		public boolean isMousified(int x, int y)
-		{
-			return false;
-		}
-		public boolean isVisible()
-		{
-			return false;
-		}
-		public int getState()
-		{
-			return 0;
-		}
-		public void draw(Graphics g)
-		{
-			//draw it
-		}
+		//current.mousifyAll(m.getX(), m.getY(), 3);
 	}
-	//will allow user to adjust a value with a slider
-	private class ZCslider implements ZCcomponent
+	public void mouseReleased(MouseEvent m)
 	{
-		private ZCslider()
-		{
-		}
-		public boolean isMousified(int x, int y)
-		{
-			return false;
-		}
-		public boolean isVisible()
-		{
-			return false;
-		}
-		public int getState()
-		{
-			return 0;
-		}
-		public void draw(Graphics g)
-		{
-			//draw it
-		}
+		//current.mousifyAll(m.getX(), m.getY(), 4);
 	}
-	//will allow the user to select from a menu of items
-	private class ZCselector implements ZCcomponent
+	public void mouseEntered(MouseEvent m) 
 	{
-		private ZCselector()
-		{
-		}
-		public boolean isMousified(int x, int y)
-		{
-			return false;
-		}
-		public boolean isVisible()
-		{
-			return false;
-		}
-		public int getState()
-		{
-			return 0;
-		}
-		public void draw(Graphics g)
-		{
-			//draw it
-		}
 	}
-	//will allow the user to enter input
-	private class ZCtextbox implements ZCcomponent
+	public void mouseExited(MouseEvent m) 
 	{
-		private ZCtextbox()
-		{
-		}
-		public boolean isMousified(int x, int y)
-		{
-			return false;
-		}
-		public boolean isVisible()
-		{
-			return false;
-		}
-		public int getState()
-		{
-			return 0;
-		}
-		public void draw(Graphics g)
-		{
-			//draw it
-		}
-	}
-	//will cover images and text, static and dynamic
-	private class ZCvisual implements ZCcomponent
-	{
-		private ZCvisual()
-		{
-		}
-		public boolean isMousified(int x, int y)
-		{
-			return false;
-		}
-		public boolean isVisible()
-		{
-			return false;
-		}
-		public int getState()
-		{
-			return 0;
-		}
-		public void draw(Graphics g)
-		{
-			//draw it
-		}
 	}
 }
