@@ -20,7 +20,7 @@ public class ZCtextbox implements ZCcomponent
 	private int caret, start, offset;
 	private TextLayout layout;
 	private float x, y;
-	private boolean reLayout, shiftPressed;
+	private boolean shiftPressed;
 	
 	public ZCtextbox()
 	{
@@ -32,7 +32,6 @@ public class ZCtextbox implements ZCcomponent
 		caret = start = -1;
 		border = null;
 		parent = null;
-		reLayout = true;
 	}
 	public boolean mousify(int a, int b, int type)
 	{
@@ -68,8 +67,7 @@ public class ZCtextbox implements ZCcomponent
 			caret = index;
 			selection = null;
 		}
-		reLayout = true;
-		return false;
+		return moused;
 	}
 	public boolean keyify(int code, char key, int type)
 	{
@@ -168,7 +166,6 @@ public class ZCtextbox implements ZCcomponent
 			}
 			caret++;
 		}
-		reLayout = true;
 		return true;
 	}
 	public boolean isVisible()
@@ -199,41 +196,36 @@ public class ZCtextbox implements ZCcomponent
 			g.setColor(highlight);
 			g.fill(selection);
 		}
-		//calculate caret (must be calculated first so that offset may be adjusted)
-		Rectangle2D caretbound = null;
-		//draw text
+		//calculate layout
 		if(text.equals("") || text == null)
 			text = " ";
-		if(reLayout || layout == null)
+		Font font = g.getFont().deriveFont((float)(shape.getHeight() * .75));
+		layout = new TextLayout(text, font, g.getFontRenderContext());
+		//calculate caret
+		Rectangle2D caretbound = null;
+		if(caret >= 0 && caret <= text.length())
 		{
-			Font font = g.getFont().deriveFont((float)(shape.getHeight() * .75));
-			layout = new TextLayout(text, font, g.getFontRenderContext());
-			//calculate caret
-			if(caret >= 0 && caret <= text.length())
+			Shape caretspace = layout.getLogicalHighlightShape(caret, caret);
+			caretbound = caretspace.getBounds();
+			if(caretbound.getX() + x - offset < shape.x + shape.height)
 			{
-				Shape caretspace = layout.getLogicalHighlightShape(caret, caret);
-				caretbound = caretspace.getBounds();
-				if(caretbound.getX() + x - offset < shape.x + shape.height)
-				{
-					if(offset > shape.height)
-						offset -= shape.height / 2;
-					else
-						offset = 0;
-					reLayout = true;
-				}
-				else if(caretbound.getX() + x - offset > shape.x + shape.width - (shape.height / 2))
-				{
-					offset += shape.height / 2;
-					reLayout = true;
-				}
+				if(offset > shape.height)
+					offset -= shape.height / 2;
+				else
+					offset = 0;
 			}
-			//this is to fix a glitch were the text will raise up if there isn't any hanging letters
-			TextLayout l2 = new TextLayout("Lj,'", font, g.getFontRenderContext());
-			Rectangle2D bounds = l2.getBounds();
-			x = (float)(shape.getX() + 3);
-			y = (float)(shape.getY() + bounds.getHeight() + 2);
-			reLayout = false;
+			else if(caretbound.getX() + x - offset > shape.x + shape.width - (shape.height / 2))
+			{
+				offset += shape.height / 2;
+			}
 		}
+		//calculate x,y
+		//this is to fix a glitch were the text will raise up if there isn't any hanging letters
+		TextLayout l2 = new TextLayout("Lj,'", font, g.getFontRenderContext());
+		Rectangle2D bounds = l2.getBounds();
+		x = (float)(shape.getX() + 3);
+		y = (float)(shape.getY() + bounds.getHeight() + 2);
+		//draw text
 		g.setColor(Color.black);
 		layout.draw(g, x - offset, y);
 		//draw caret (non-dynamic)

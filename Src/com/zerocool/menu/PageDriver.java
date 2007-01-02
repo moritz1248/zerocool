@@ -33,9 +33,11 @@ public class PageDriver extends JPanel implements MouseInputListener, KeyListene
 		
 		//test code
 		current = new ZCpage();
+		ZCbutton b1 = new ZCbutton();
 		ZCselector s1 = new ZCselector();
 		ZCslider s2 = new ZCslider();
 		ZCtextbox tb1 = new ZCtextbox();
+		current.add(b1);
 		current.add(s1);
 		current.add(s2);
 		current.add(tb1);
