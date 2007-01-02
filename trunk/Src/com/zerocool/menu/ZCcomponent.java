@@ -7,6 +7,7 @@ import java.io.Serializable;
 public interface ZCcomponent extends Serializable
 {
 	boolean mousify(int a, int b, int type);
+	boolean keyify(int code, char key, int type);
 	boolean isVisible();
 	Value getState();
 	void draw(Graphics2D g);

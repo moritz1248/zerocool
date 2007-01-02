@@ -77,6 +77,10 @@ public class ZCslider implements ZCcomponent
 		}
 		return isMousified;
 	}
+	public boolean keyify(int code, char key, int type)
+	{
+		return false;
+	}
 	public boolean isVisible()
 	{
 		return visible;

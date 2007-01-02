@@ -7,6 +7,7 @@ public class Value implements Serializable
 {
 	private String str;
 	private int num;
+	//um, not sure if I'm actually going to use the lock functionality, might just get rid of it
 	private boolean locked;
 	//thought it would work but something errors out when i try to use this as a null value...
 	//see below for faulty code

@@ -14,6 +14,10 @@ public class ZCvisual implements ZCcomponent
 	{
 		return false;
 	}
+	public boolean keyify(int code, char key, int type)
+	{
+		return false;
+	}
 	public boolean isVisible()
 	{
 		return false;
