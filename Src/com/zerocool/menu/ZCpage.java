@@ -1,6 +1,8 @@
 package com.zerocool.menu;
 
+import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.io.Serializable;
 import java.util.ArrayList;
 
@@ -25,10 +27,13 @@ public class ZCpage implements Serializable//deciding whether or not to make it 
 	
 	public void mousifyAll(int x, int y, int type)
 	{
-		if(type == 0)
-			System.out.println("Moused = " + x + "-" + y + "-" + type);
 		for(ZCcomponent c : components)
 			c.mousify(x, y, type);
+	}
+	public void keyifyAll(int code, char key, int type)
+	{
+		for(ZCcomponent c : components)
+			c.keyify(code, key, type);
 	}
 	
 	public Value getProp(String name)
@@ -45,6 +50,12 @@ public class ZCpage implements Serializable//deciding whether or not to make it 
 	public boolean adjustProp(String name, Value value)
 	{
 		return properties.adjust(name, value);
+	}
+
+	public void resetClip(Graphics g)
+	{
+		//change for variable size
+		g.setClip(new Rectangle(0, 0, 800, 600));
 	}
 	
 	public void draw(Graphics2D g)

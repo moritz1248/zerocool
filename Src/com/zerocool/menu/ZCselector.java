@@ -62,6 +62,10 @@ public class ZCselector implements ZCcomponent
 	{
 		return false;
 	}
+	public boolean keyify(int code, char key, int type)
+	{
+		return false;
+	}
 	public boolean isVisible()
 	{
 		return true;

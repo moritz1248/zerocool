@@ -2,17 +2,15 @@ package com.zerocool.menu;
  
 import java.awt.event.MouseEvent;
 import javax.swing.event.MouseInputListener;
+import java.awt.event.*;
 import javax.swing.JPanel;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.io.Serializable;
 import java.awt.*;
-import java.awt.image.BufferedImage;;
+import java.awt.image.BufferedImage;
 
-//so far this is just the outline of what it's going to look like
 //i'm going to create a menu editor which will make it so we can
 //easily fine tune and/or redo the menu system at a moments notice
-public class PageDriver extends JPanel implements MouseInputListener 
+public class PageDriver extends JPanel implements MouseInputListener, KeyListener
 {
 	//all that crap here
 	private ArrayList<ZCpage> pages;
@@ -24,6 +22,7 @@ public class PageDriver extends JPanel implements MouseInputListener
 		setPreferredSize(new Dimension(800, 600));
 		addMouseListener(this);
 		addMouseMotionListener(this);
+		//keylistener has to be added to the frame not the panel
 		
 		//load from file
 		pages = loadPages();
@@ -36,8 +35,10 @@ public class PageDriver extends JPanel implements MouseInputListener
 		current = new ZCpage();
 		ZCselector s1 = new ZCselector();
 		ZCslider s2 = new ZCslider();
+		ZCtextbox tb1 = new ZCtextbox();
 		current.add(s1);
 		current.add(s2);
+		current.add(tb1);
 		pages.add(current);
 	}
 
@@ -60,10 +61,10 @@ public class PageDriver extends JPanel implements MouseInputListener
 		return new ArrayList<ZCpage>();
 	}
 	
+	//mouse stuff
 	public void mouseClicked(MouseEvent m) 
 	{
 		current.mousifyAll(m.getX(), m.getY(), 0);
-		System.out.println("mouse clicked at: " + m.getX() + "-" + m.getY());
 		repaint();
 	}
 	public void mouseMoved(MouseEvent m) 
@@ -78,16 +79,34 @@ public class PageDriver extends JPanel implements MouseInputListener
 	}
 	public void mousePressed(MouseEvent m) 
 	{
-		//current.mousifyAll(m.getX(), m.getY(), 3);
+		current.mousifyAll(m.getX(), m.getY(), 3);
+		repaint();
 	}
 	public void mouseReleased(MouseEvent m)
 	{
 		//current.mousifyAll(m.getX(), m.getY(), 4);
+		//repaint();
 	}
 	public void mouseEntered(MouseEvent m) 
 	{
 	}
 	public void mouseExited(MouseEvent m) 
 	{
+	}
+	//keyboard stuff
+	public void keyTyped(KeyEvent k)
+	{
+		current.keyifyAll(k.getKeyCode(), k.getKeyChar(), 0);
+		repaint();
+	}
+	public void keyPressed(KeyEvent k)
+	{
+		current.keyifyAll(k.getKeyCode(), k.getKeyChar(), 1);
+		repaint();
+	}
+	public void keyReleased(KeyEvent k)
+	{
+		current.keyifyAll(k.getKeyCode(), k.getKeyChar(), 2);
+		repaint();
 	}
 }

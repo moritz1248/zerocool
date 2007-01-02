@@ -11,6 +11,7 @@ public class TestMenu
 		JFrame frame = new JFrame("Testing ze menu");
 		
 		PageDriver pd = new PageDriver();
+		frame.addKeyListener(pd);
 		frame.getContentPane().add(pd);
 		frame.pack();
 		frame.setVisible(true);
