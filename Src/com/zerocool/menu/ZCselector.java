@@ -59,7 +59,7 @@ public class ZCselector implements ZCcomponent
 			right = rButton;
 			left = lButton;
 		}
-		parent = new ZCpage();
+		parent = null;
 	}
 	public boolean mousify(int a, int b, int type)
 	{

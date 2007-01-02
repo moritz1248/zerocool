@@ -32,7 +32,7 @@ public class ZCslider implements ZCcomponent
 		showVal = true;
 		left = new ZCbutton(new Rectangle(shape.x - 15, shape.y, 15, shape.height), "<", false, new Value(name, -1 * increment, false),true, null, null, null);
 		right = new ZCbutton(new Rectangle(shape.x + shape.width, shape.y, 15, shape.height), ">", false, new Value(name, increment, false),true, null, null, null);
-		parent = new ZCpage();
+		parent = null;
 	}
 	public ZCslider(Rectangle form, String nam, int minimum, int maximum, int startValue, int incrementer, boolean showValue, Value propC, ZCvisual img, ZCvisual slider, ZCbutton lButton, ZCbutton rButton)
 	{
@@ -57,7 +57,7 @@ public class ZCslider implements ZCcomponent
 			right = rButton;
 			left = lButton;
 		}
-		parent = new ZCpage();
+		parent = null;
 	}
 	public boolean mousify(int a, int b, int type)
 	{

@@ -4,20 +4,26 @@ import java.awt.event.MouseEvent;
 import javax.swing.event.MouseInputListener;
 import java.awt.event.*;
 import javax.swing.JPanel;
+import javax.swing.JFrame;
 import java.util.ArrayList;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
 //i'm going to create a menu editor which will make it so we can
 //easily fine tune and/or redo the menu system at a moments notice
-public class PageDriver extends JPanel implements MouseInputListener, KeyListener
+public class PageDriver extends JPanel implements MouseInputListener, KeyListener, WindowListener
 {
 	//all that crap here
 	private ArrayList<ZCpage> pages;
 	private ZCpage current;
+	private JFrame parent;
 	
-	public PageDriver() 
+	public PageDriver(JFrame frame) 
 	{
+		parent = frame;
+		parent.addWindowListener(this);
+		parent.addKeyListener(this);
+		
 		//window specifications
 		setPreferredSize(new Dimension(800, 600));
 		addMouseListener(this);
@@ -32,7 +38,7 @@ public class PageDriver extends JPanel implements MouseInputListener, KeyListene
 			System.out.println("Error: no input read");
 		
 		//test code
-		current = new ZCpage();
+		current = new ZCpage(this);
 		ZCbutton b1 = new ZCbutton();
 		ZCselector s1 = new ZCselector();
 		ZCslider s2 = new ZCslider();
@@ -110,5 +116,28 @@ public class PageDriver extends JPanel implements MouseInputListener, KeyListene
 	{
 		current.keyifyAll(k.getKeyCode(), k.getKeyChar(), 2);
 		repaint();
+	}
+	//window stuff
+	public void windowClosing(WindowEvent w)
+	{
+		parent.dispose();
+	}
+	public void windowClosed(WindowEvent w)
+	{
+	}
+	public void windowDeactivated(WindowEvent w)
+	{
+	}
+	public void windowActivated(WindowEvent w)
+	{
+	}
+	public void windowOpened(WindowEvent w)
+	{
+	}
+	public void windowIconified(WindowEvent w)
+	{
+	}
+	public void windowDeiconified(WindowEvent w)
+	{
 	}
 }
