@@ -3,6 +3,7 @@ package com.zerocool.menu;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.Color;
 import java.io.Serializable;
 import java.util.ArrayList;
 
@@ -11,12 +12,16 @@ public class ZCpage implements Serializable//deciding whether or not to make it 
 {
 	private ArrayList<ZCcomponent> components;
 	private ZCproperties properties;
-	//another variable for the background maybe
+	private ZCcomponent focus;
+	private Color backColor;
+	private ZCvisual background;
+	//another variable(s) for the background maybe
 	
 	public ZCpage()
 	{
 		components = new ArrayList<ZCcomponent>();
 		properties = new ZCproperties();
+		focus = null;
 	}
 	
 	public void add(ZCcomponent newComp)
@@ -28,12 +33,14 @@ public class ZCpage implements Serializable//deciding whether or not to make it 
 	public void mousifyAll(int x, int y, int type)
 	{
 		for(ZCcomponent c : components)
-			c.mousify(x, y, type);
+			if(c.mousify(x, y, type) && !c.getClass().equals(ZCbutton.class))
+				focus = c;
 	}
 	public void keyifyAll(int code, char key, int type)
 	{
-		for(ZCcomponent c : components)
-			c.keyify(code, key, type);
+		//only keyify the focus so that text doesn't appear in multiple focuses
+		if(focus != null)
+			focus.keyify(code, key, type);
 	}
 	
 	public Value getProp(String name)
@@ -60,6 +67,13 @@ public class ZCpage implements Serializable//deciding whether or not to make it 
 	
 	public void draw(Graphics2D g)
 	{
+		//background first
+		if(backColor == null)
+			backColor = Color.lightGray;
+		g.setColor(backColor);
+		g.fillRect(0, 0, 800, 600);
+		if(background != null)
+			background.draw(g);
 		//is it really that simple?
 		for(ZCcomponent zcc : components)
 			if(zcc.isVisible())

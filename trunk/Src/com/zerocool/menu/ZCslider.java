@@ -3,6 +3,7 @@ package com.zerocool.menu;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.event.KeyEvent;
 
 //will allow user to adjust a value with a slider
 public class ZCslider implements ZCcomponent
@@ -79,6 +80,16 @@ public class ZCslider implements ZCcomponent
 	}
 	public boolean keyify(int code, char key, int type)
 	{
+		if((code == KeyEvent.VK_LEFT || code == KeyEvent.VK_DOWN) && getState().getNum() > min && type == 1)
+		{
+			parent.adjustProp(propChange.getStr(), new Value(null, getState().getNum() - increment, false));
+			return true;
+		}
+		if((code == KeyEvent.VK_RIGHT || code == KeyEvent.VK_UP) && getState().getNum() < max && type == 1)
+		{
+			parent.adjustProp(propChange.getStr(), new Value(null, getState().getNum() + increment, false));
+			return true;
+		}
 		return false;
 	}
 	public boolean isVisible()
@@ -128,7 +139,7 @@ public class ZCslider implements ZCcomponent
 		else
 		{
 			g.setColor(Color.blue);
-			int width = (shape.width * increment) / (max - min + 1);
+			int width = ((shape.width) / (max - min + 1));
 			int position = parent.getProp(propChange.getStr()).getNum() - min;
 			g.draw(new Rectangle(shape.x + (position * width), shape.y, width - 1, shape.height));
 		}

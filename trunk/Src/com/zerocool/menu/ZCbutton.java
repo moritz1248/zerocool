@@ -24,9 +24,9 @@ public class ZCbutton implements ZCcomponent
 	
 	public ZCbutton()
 	{
-		shape = null;
-		name = "blank";
-		visible = false;
+		shape = new Rectangle(300, 300, 50, 50);
+		name = "empty";
+		visible = true;
 		state = new Value(name, 0, false);
 		image = selection = highlight = null;
 		propChange = new Value(name, 1, false);
@@ -54,8 +54,6 @@ public class ZCbutton implements ZCcomponent
 		{
 			if(toIncrement)
 			{
-				System.out.print("value: " + propChange.getStr() + " incremented by " + propChange.getNum() + " - changed to: ");
-				System.out.println(parent.getProp(propChange.getStr()));
 				parent.adjustProp(propChange.getStr(), new Value(null, propChange.getNum() + parent.getProp(propChange.getStr()).getNum(), false));
 				state.setNum(1);
 			}

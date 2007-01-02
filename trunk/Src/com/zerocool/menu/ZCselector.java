@@ -3,6 +3,7 @@ package com.zerocool.menu;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Color;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 
 //will allow the user to select from a menu of items
@@ -24,6 +25,7 @@ public class ZCselector implements ZCcomponent
 		name = "Standard";
 		values = new ArrayList<String>();
 		values.add("standard");
+		values.add("nonStandard");
 		state = new Value(values.get(0), 0, false);
 		propChange = new Value(name, 0, false);
 		image = null;
@@ -40,7 +42,8 @@ public class ZCselector implements ZCcomponent
 		if(values == null || values.size() == 0)
 		{
 			values = new ArrayList<String>();
-			values.add("Standard");
+			values.add("standard");
+			values.add("nonStandard");
 		}
 		state = new Value(values.get(0), firstSelect, false);
 		propChange = propC;
@@ -60,10 +63,20 @@ public class ZCselector implements ZCcomponent
 	}
 	public boolean mousify(int a, int b, int type)
 	{
-		return false;
+		return shape.contains(a, b);
 	}
 	public boolean keyify(int code, char key, int type)
 	{
+		if((code == KeyEvent.VK_LEFT || code == KeyEvent.VK_DOWN) && getState().getNum() > 0 && type == 1)
+		{
+			parent.adjustProp(propChange.getStr(), new Value(null, getState().getNum() - 1, false));
+			return true;
+		}
+		if((code == KeyEvent.VK_RIGHT || code == KeyEvent.VK_UP) && getState().getNum() < values.size() && type == 1)
+		{
+			parent.adjustProp(propChange.getStr(), new Value(null, getState().getNum() + 1, false));
+			return true;
+		}
 		return false;
 	}
 	public boolean isVisible()
