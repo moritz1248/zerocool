@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 
 //holds all the data for a page
-public class ZCproperties implements Serializable//probably not though /\
+public class ZCproperties implements Serializable
 {
 	private HashMap<String, Value> propMap;
 	private HashMap<String, ZCcomponent> listeners;
