@@ -17,9 +17,15 @@ public class PageDriver extends JPanel implements MouseInputListener, KeyListene
 	private ArrayList<ZCpage> pages;
 	private ZCpage current;
 	private JFrame parent;
+	private BufferedImage screen;
+	private Graphics2D g2;
+	private boolean firstTime;
+	private int height, width;
 	
 	public PageDriver(JFrame frame) 
 	{
+		firstTime = true;
+		
 		parent = frame;
 		parent.addWindowListener(this);
 		parent.addKeyListener(this);
@@ -37,30 +43,23 @@ public class PageDriver extends JPanel implements MouseInputListener, KeyListene
 		else
 			System.out.println("Error: no input read");
 		
-		//test code
 		current = new ZCpage(this);
-		ZCbutton b1 = new ZCbutton();
-		ZCselector s1 = new ZCselector();
-		ZCslider s2 = new ZCslider();
-		ZCtextbox tb1 = new ZCtextbox();
-		current.add(b1);
-		current.add(s1);
-		current.add(s2);
-		current.add(tb1);
+		
 		pages.add(current);
 	}
 
 	public void paint(Graphics g)
 	{
-		//can i get the current size of the window easily?
-		//i don't want to have to initialize screen and g2 every time
-		//create global variables...later
-		BufferedImage screen = new BufferedImage(800, 600, BufferedImage.TYPE_3BYTE_BGR);
-		Graphics2D g2 = (Graphics2D)screen.getGraphics();
-		g2.setColor(Color.gray);
-		g2.fill(new Rectangle(0, 0, 800, 600));
+		if(firstTime || height != parent.getHeight() || width != parent.getWidth())
+		{
+			width = parent.getWidth();
+			height = parent.getHeight();
+			screen = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
+			g2 = (Graphics2D)screen.getGraphics();
+			firstTime = false;
+		}
 		if(current != null)
-			current.draw(g2);
+			current.draw(g2, false);
 		g.drawImage(screen, 0, 0, null);
 	}
 	

@@ -9,7 +9,7 @@ import java.awt.event.KeyEvent;
 public class ZCtextbox implements ZCcomponent
 {
 	private ZCpage parent;
-	private Rectangle shape;
+	private PolyShape shape;
 	private Rectangle2D selection;
 	private String name, text;
 	private Color highlight;
@@ -24,7 +24,7 @@ public class ZCtextbox implements ZCcomponent
 	
 	public ZCtextbox()
 	{
-		shape = new Rectangle(100, 100, 500, 20);
+		shape = new PolyShape(100, 100, 500, 20, PolyShape.SHAPE.RECTANGLE);
 		selection = null;
 		highlight = Color.yellow;
 		name = "none";
@@ -176,20 +176,28 @@ public class ZCtextbox implements ZCcomponent
 	{
 		return new Value(text, 0, false);
 	}
+	public PolyShape getShape()
+	{
+		return shape;
+	}
+	public void translate(int x, int y)
+	{
+		shape.translate(x, y);
+	}
 	public void setPage(ZCpage page)
 	{
 		parent = page;
 	}
-	public void shout(String name, Value value)
+	public void notify(ZCsubButton button, boolean clickOn)
 	{
 	}
-	public void draw(Graphics2D g)
+	public void draw(Graphics2D g, boolean drawVertices)
 	{
 		//so that nothing "overflows"
-		g.setClip(shape);
+		g.setClip(shape.getBounds());
 		//draw background (white)
 		g.setColor(Color.white);
-		g.fill(shape);
+		shape.fill(g, drawVertices);
 		//draw highlight
 		if(selection != null)
 		{
@@ -207,16 +215,16 @@ public class ZCtextbox implements ZCcomponent
 		{
 			Shape caretspace = layout.getLogicalHighlightShape(caret, caret);
 			caretbound = caretspace.getBounds();
-			if(caretbound.getX() + x - offset < shape.x + shape.height)
+			if(caretbound.getX() + x - offset < shape.getX() + shape.getHeight())
 			{
-				if(offset > shape.height)
-					offset -= shape.height / 2;
+				if(offset > shape.getHeight())
+					offset -= shape.getHeight() / 2;
 				else
 					offset = 0;
 			}
-			else if(caretbound.getX() + x - offset > shape.x + shape.width - (shape.height / 2))
+			else if(caretbound.getX() + x - offset > shape.getX() + shape.getWidth() - (shape.getHeight() / 2))
 			{
-				offset += shape.height / 2;
+				offset += shape.getHeight() / 2;
 			}
 		}
 		//calculate x,y
@@ -231,15 +239,15 @@ public class ZCtextbox implements ZCcomponent
 		//draw caret (non-dynamic)
 		if(caretbound != null)
 		{
-			caretbound.setRect(caretbound.getX() + x - offset, shape.y, 1, shape.height);
+			caretbound.setRect(caretbound.getX() + x - offset, shape.getY(), 1, shape.getHeight());
 			g.draw(caretbound);
 		}
 		//reset clip to allow border to 'spill out'
 		parent.resetClip(g);
 		//draw border
 		if(border != null)
-			border.draw(g);
+			border.draw(g, drawVertices);
 		else
-			g.draw(shape);
+			shape.draw(g, drawVertices);
 	}
 }

@@ -7,13 +7,14 @@ import java.awt.Color;
 import java.io.Serializable;
 import java.util.ArrayList;
 import javax.swing.Timer;
+import javax.swing.JPanel;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
 //holds all the components for a page as well as a properties object
 public class ZCpage implements Serializable, ActionListener
 {
-	private PageDriver parent;
+	private JPanel parent;
 	private ArrayList<ZCcomponent> components;
 	private ZCproperties properties;
 	private ZCcomponent focus;
@@ -23,7 +24,7 @@ public class ZCpage implements Serializable, ActionListener
 	private Timer time;
 	private int delay;
 	
-	public ZCpage(PageDriver driver)
+	public ZCpage(JPanel driver)
 	{
 		parent = driver;
 		components = new ArrayList<ZCcomponent>();
@@ -31,7 +32,16 @@ public class ZCpage implements Serializable, ActionListener
 		focus = null;
 		useTimer = false;
 		delay = 100;
-		background = new ZCvisual();
+		background = null;
+
+		ZCbutton b1 = new ZCbutton();
+		ZCselector s1 = new ZCselector();
+		ZCslider s2 = new ZCslider();
+		ZCtextbox tb1 = new ZCtextbox();
+		add(b1);
+		add(s1);
+		add(s2);
+		add(tb1);
 	}
 	
 	public void add(ZCcomponent newComp)
@@ -46,6 +56,7 @@ public class ZCpage implements Serializable, ActionListener
 			if(c.mousify(x, y, type) && !c.getClass().equals(ZCbutton.class))
 				focus = c;
 	}
+	
 	public void keyifyAll(int code, char key, int type)
 	{
 		//only keyify the focus so that text doesn't appear in multiple focuses
@@ -58,9 +69,9 @@ public class ZCpage implements Serializable, ActionListener
 		return properties.getProp(name);
 	}
 	
-	public void addListener(String name, ZCcomponent zcc)
+	public ArrayList<ZCcomponent> getComponents()
 	{
-		properties.addListener(name, zcc);
+		return components;
 	}
 	
 	//return true if the selected property was properly adjusted
@@ -80,25 +91,23 @@ public class ZCpage implements Serializable, ActionListener
 	{
 		parent.repaint();
 	}
-
+	
 	public void resetClip(Graphics g)
 	{
-		//change for variable size
-		g.setClip(new Rectangle(0, 0, 800, 600));
+		g.setClip(new Rectangle(0, 0, parent.getWidth(), parent.getHeight()));
 	}
 	
-	public void draw(Graphics2D g)
+	public void draw(Graphics2D g, boolean drawVertices)
 	{
 		//background first
 		if(backColor == null)
 			backColor = Color.lightGray;
 		g.setColor(backColor);
-		g.fillRect(0, 0, 800, 600);
+		g.fillRect(0, 0, parent.getWidth(), parent.getHeight());
 		if(background != null)
-			background.draw(g);
-		//is it really that simple?
+			background.draw(g, drawVertices);
 		for(ZCcomponent zcc : components)
 			if(zcc.isVisible())
-				zcc.draw(g);
+				zcc.draw(g, drawVertices);
 	}
 }

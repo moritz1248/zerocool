@@ -8,19 +8,19 @@ import java.awt.event.KeyEvent;
 //will allow user to adjust a value with a slider
 public class ZCslider implements ZCcomponent
 {
-	private Rectangle shape;
+	private PolyShape shape;
 	private String name;
 	//state: str = name / num = value
 	private Value state, propChange;
 	private ZCvisual image, slidepiece;
-	private ZCbutton left, right;
+	private ZCsubButton left, right;
 	private boolean visible, showVal;
 	private int min, max, increment;
 	private ZCpage parent;
 	
 	public ZCslider()
 	{
-		shape = new Rectangle(15, 0, 55, 15);
+		shape = new PolyShape(15, 0, 55, 15, PolyShape.SHAPE.RECTANGLE);
 		name = "blank";
 		state = new Value(name, 0, false);
 		propChange = new Value(name, 0, false);
@@ -30,11 +30,11 @@ public class ZCslider implements ZCcomponent
 		max = 10;
 		increment = 1;
 		showVal = true;
-		left = new ZCbutton(new Rectangle(shape.x - 15, shape.y, 15, shape.height), "<", false, new Value(name, -1 * increment, false),true, null, null, null);
-		right = new ZCbutton(new Rectangle(shape.x + shape.width, shape.y, 15, shape.height), ">", false, new Value(name, increment, false),true, null, null, null);
+		left = new ZCsubButton(this, new PolyShape(shape.getX() - 15, shape.getY(), 15, shape.getHeight(), PolyShape.SHAPE.RECTANGLE), "<", false, new Value(name, -1 * increment, false),true, null, null, null);
+		right = new ZCsubButton(this, new PolyShape(shape.getX() + shape.getWidth(), shape.getY(), 15, shape.getHeight(), PolyShape.SHAPE.RECTANGLE), ">", false, new Value(name, increment, false),true, null, null, null);
 		parent = null;
 	}
-	public ZCslider(Rectangle form, String nam, int minimum, int maximum, int startValue, int incrementer, boolean showValue, Value propC, ZCvisual img, ZCvisual slider, ZCbutton lButton, ZCbutton rButton)
+	public ZCslider(PolyShape form, String nam, int minimum, int maximum, int startValue, int incrementer, boolean showValue, Value propC, ZCvisual img, ZCvisual slider, ZCsubButton lButton, ZCsubButton rButton)
 	{
 		shape = form;
 		name = nam;
@@ -49,11 +49,13 @@ public class ZCslider implements ZCcomponent
 		visible = true;
 		if(lButton == null || rButton == null)
 		{
-			left = new ZCbutton(new Rectangle(shape.x - 15, shape.y, 15, shape.height), "<", false, new Value(propC.getStr(), -1 * increment, false),true, null, null, null);
-			right = new ZCbutton(new Rectangle(shape.x + shape.width, shape.y, 15, shape.height), ">", false, new Value(propC.getStr(), increment, false),true, null, null, null);
+			left = new ZCsubButton(this, new PolyShape(shape.getX() - 15, shape.getY(), 15, shape.getY(), PolyShape.SHAPE.RECTANGLE), "<", false, new Value(propC.getStr(), -1 * increment, false),true, null, null, null);
+			right = new ZCsubButton(this, new PolyShape(shape.getX() + shape.getWidth(), shape.getY(), 15, shape.getHeight(), PolyShape.SHAPE.RECTANGLE), ">", false, new Value(propC.getStr(), increment, false),true, null, null, null);
 		}
 		else
 		{
+			right.setParent(this);
+			left.setParent(this);
 			right = rButton;
 			left = lButton;
 		}
@@ -64,18 +66,20 @@ public class ZCslider implements ZCcomponent
 		boolean isMousified = shape != null && shape.contains(a, b);
 		if(isMousified && type == 0)
 		{
-			int width = (shape.width * increment) / (max - min + 1);
-			int num = ((a - shape.x) / width) + min;
+			int width = (shape.getWidth() * increment) / (max - min + 1);
+			int num = ((a - shape.getX()) / width) + min;
 			parent.adjustProp(propChange.getStr(), new Value(null, num, false));
 			return true;
 		}
 		else if(isMousified && type == 2)
 		{
-			int width = (shape.width * increment) / (max - min + 1);
-			int num = ((a - shape.x) / width) + min;
+			int width = (shape.getWidth() * increment) / (max - min + 1);
+			int num = ((a - shape.getX()) / width) + min;
 			parent.adjustProp(propChange.getStr(), new Value(null, num, false));
 			return true;
 		}
+		isMousified |= left.mousify(a, b, type);
+		isMousified |= right.mousify(a, b, type);
 		return isMousified;
 	}
 	public boolean keyify(int code, char key, int type)
@@ -100,48 +104,68 @@ public class ZCslider implements ZCcomponent
 	{
 		return parent.getProp(propChange.getStr());
 	}
+	public PolyShape getShape()
+	{
+		return shape;
+	}
+	public void translate(int x, int y)
+	{
+		shape.translate(x, y);
+		left.translate(x, y);
+		right.translate(x, y);
+	}
 	public void setPage(ZCpage page)
 	{
 		parent = page;
 		if(parent != null)
 		{
-			parent.add(left);
-			parent.add(right);
 			parent.adjustProp(name, new Value(name, min, false));
-			parent.addListener(name, this);
 		}
 	}
-	public void shout(String name, Value value)
+	public void notify(ZCsubButton button, boolean clickOn)
 	{
-		if(parent.getProp(propChange.getStr()).getNum() > max)
-			parent.adjustProp(propChange.getStr(), new Value(null, max, false));
-		else if(parent.getProp(propChange.getStr()).getNum() < min)
-			parent.adjustProp(propChange.getStr(), new Value(null, min, false));
+		int num = getState().getNum();
+		if(button == left && clickOn)
+		{
+			if(num < min + increment)
+				parent.adjustProp(name, new Value(null, min, false));
+			else
+				parent.adjustProp(name, new Value(null, num - increment, false));
+		}
+		else if(button == right && clickOn)
+		{
+			if(num > max - increment)
+				parent.adjustProp(name, new Value(null, max, false));
+			else
+				parent.adjustProp(name, new Value(null, num + increment, false));
+		}
 	}
-	public void draw(Graphics2D g)
+	public void draw(Graphics2D g, boolean drawVertices)
 	{
 		if(image != null)
-			image.draw(g);
+			image.draw(g, drawVertices);
 		else
 		{
 			g.setColor(Color.white);
-			g.fill(shape);
+			shape.fill(g, drawVertices);
 			if(showVal)
 			{
 				g.setColor(Color.black);
-				g.fill(new Rectangle(shape.x - 15, shape.y + shape.height, shape.width + 30, 18));
+				g.fill(new Rectangle(shape.getX() - 15, shape.getY() + shape.getHeight(), shape.getWidth() + 30, 18));
 				g.setColor(Color.white);
-				g.drawString(name + ": " + getState().getNum(), shape.x - 10, shape.y + shape.height + (shape.height / 2) + 6);
+				g.drawString(name + ": " + getState().getNum(), shape.getX() - 10, shape.getY() + shape.getHeight() + (shape.getHeight() / 2) + 6);
 			}
 		}
 		if(slidepiece != null)
-			slidepiece.draw(g);
+			slidepiece.draw(g, false);
 		else
 		{
 			g.setColor(Color.blue);
-			int width = ((shape.width) / (max - min + 1));
+			int width = ((shape.getWidth()) / (max - min + 1));
 			int position = parent.getProp(propChange.getStr()).getNum() - min;
-			g.draw(new Rectangle(shape.x + (position * width), shape.y, width - 1, shape.height));
+			g.draw(new Rectangle(shape.getX() + (position * width), shape.getY(), width - 1, shape.getHeight()));
 		}
+		left.draw(g, drawVertices);
+		right.draw(g, drawVertices);
 	}
 }

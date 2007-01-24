@@ -7,12 +7,10 @@ import java.util.HashMap;
 public class ZCproperties implements Serializable
 {
 	private HashMap<String, Value> propMap;
-	private HashMap<String, ZCcomponent> listeners;
 	//later maybe make it possible for more objects to 'listen'
 	public ZCproperties()
 	{
 		propMap = new HashMap<String, Value>();
-		listeners = new HashMap<String, ZCcomponent>();
 	}
 	//mro...i don't have a draw method
 	public Value getProp(String name)
@@ -28,12 +26,6 @@ public class ZCproperties implements Serializable
 	public void addProp(String name, Value value, ZCcomponent listener)
 	{
 		propMap.put(name, value);
-		if(listener != null)
-			listeners.put(name, listener);
-	}
-	public void addListener(String name, ZCcomponent listener)
-	{
-		listeners.put(name, listener);
 	}
 	//returns whether or not the requested change was accepted
 	public boolean adjust(String name, Value value)
@@ -44,10 +36,7 @@ public class ZCproperties implements Serializable
 			return false;
 		}
 		Value val = propMap.get(name);
-		boolean out = val.setStr(value.getStr()) && val.setNum(value.getNum());
-		if(listeners.containsKey(name))
-			listeners.get(name).shout(name, value);
-		return out;
+		return val.setStr(value.getStr()) && val.setNum(value.getNum());
 	}
 	
 	public String toString()
