@@ -9,7 +9,7 @@ import java.awt.image.BufferedImage;
 public class ZCvisual implements ZCcomponent
 {
 	private ZCpage parent;
-	private Shape shape;
+	private PolyShape shape;
 	private ArrayList<Step> steps;
 	private boolean visible, useTimer;
 	
@@ -17,10 +17,14 @@ public class ZCvisual implements ZCcomponent
 	{
 		visible = true;
 		parent = null;
-		shape = new Rectangle(300, 300, 200, 200);
+		shape = new PolyShape(300, 300, 100, 100, PolyShape.SHAPE.LINE);
 		steps = new ArrayList<Step>();
-		steps.add(new Step(0, null, Color.black, false, null));
+		steps.add(new Step(null, Color.black, false, null));
 		useTimer = false;
+	}
+	public ArrayList<Step> getSteps()
+	{
+		return steps;
 	}
 	public boolean mousify(int a, int b, int type)
 	{
@@ -38,41 +42,58 @@ public class ZCvisual implements ZCcomponent
 	{
 		return null;
 	}
+	public PolyShape getShape()
+	{
+		return shape;
+	}
+	public void translate(int x, int y)
+	{
+		shape.translate(x, y);
+	}
 	public void setPage(ZCpage page)
 	{
 		parent = page;
 		if(useTimer)
 			parent.setTimer();
 	}
-	public void shout(String name, Value value)
+	public void notify(ZCsubButton button, boolean clickOn)
 	{
-		//add functionality to change graphics due to value changes?
 	}
 	//draw without any offset
-	public void draw(Graphics2D g)
+	public void draw(Graphics2D g, boolean drawVertices)
 	{
 		for(Step s : steps)
 			s.draw(g, 0, 0);
+		if(drawVertices)
+		{
+			g.setColor(PolyShape.color);
+			shape.draw(g, drawVertices);
+		}
 	}
 	//draw with offset a,b or centered at a,b
-	public void draw(Graphics2D g, int a, int b, boolean isCentered)
+	public void draw(Graphics2D g, int a, int b, boolean isCentered, boolean drawVertices)
 	{
 		if(isCentered)
 			for(Step s : steps)
-				s.draw(g, (new Double(a - (shape.getBounds().getWidth() / 2))).intValue(), (new Double(b - (shape.getBounds().getHeight()))).intValue());
+				s.draw(g, shape.getCenterX(), shape.getCenterY());
 		else
 			for(Step s : steps)
 				s.draw(g, a, b);
+		if(drawVertices)
+		{
+			g.setColor(PolyShape.color);
+			shape.draw(g, drawVertices);
+		}
 	}
 	
 	//PRIVATE CLASS
 	
 	//here is where the power lies
-	private class Step
+	public class Step
 	{
 		//x# and y# can represent location and/or width/height and/or something else
-		private int type;
 		private int[][] props;
+		private PolyShape piece;
 		private Color color;
 		private volatile BufferedImage image;
 		private boolean dynamic;
@@ -80,30 +101,17 @@ public class ZCvisual implements ZCcomponent
 		//Each step is one piece of visual code
 		private Step()
 		{
-			type = 0;
 			color = Color.black;
-			props = new int[2][2];
-			props[0][1] = 10;
-			props[1][1] = 10;
 			image = null;
 			dynamic = false;
 		}
-		private Step(int stepType, int[][] properties, Color c, boolean changing, BufferedImage bufferedImage)
+		private Step(PolyShape form, Color c, boolean changing, BufferedImage bufferedImage)
 		{
-			type = stepType;
-			color = c;
-			if(props != null)
-				props = properties;
+			if(form == null)
+				piece = shape;
 			else
-			{
-				props = new int[2][2];
-				Rectangle2D bounds = shape.getBounds();
-				props[0][0] = (new Double(bounds.getX())).intValue();
-				props[1][0] = (new Double(bounds.getY())).intValue();
-				props[0][1] = (new Double(bounds.getWidth())).intValue();
-				props[1][1] = (new Double(bounds.getHeight())).intValue();
-				
-			}
+				piece = form;
+			color = c;
 			dynamic = changing;
 			image = bufferedImage;
 		}
@@ -111,22 +119,16 @@ public class ZCvisual implements ZCcomponent
 		//draw this step with offset (a,b)
 		public void draw(Graphics2D g, int a, int b)
 		{
-			System.out.println("Drawing step type: " + type);
 			g.setColor(color);
-			switch(type)
-			{
-				//yer basic circle
-				case 0:
-					if(props.length >= 2 && props[0].length >= 2)
-						g.fillOval(props[0][0] + a, props[1][0] + b, props[0][1], props[1][1]);
-					break;
-				//yer basic line
-				case 1:
-					if(props.length >= 2 && props[0].length >= 2)
-						g.drawLine(props[0][0] + a, props[1][0] + b, props[0][1] + a, props[1][1] + b);
-				default:
-					g.drawImage(image, null, null);
-			}
+			if(image != null)
+				g.drawImage(image, null, null);
+			else
+				piece.fill(g, false);
+		}
+		
+		public PolyShape getShape()
+		{
+			return piece;
 		}
 	}
 }

@@ -9,11 +9,11 @@ import java.util.ArrayList;
 //will allow the user to select from a menu of items
 public class ZCselector implements ZCcomponent
 {
-	private Rectangle shape;
+	private PolyShape shape;
 	private String name;
 	private Value state, propChange;
 	private ZCvisual image;
-	private ZCbutton left, right;
+	private ZCsubButton left, right;
 	private boolean visible;
 	private ZCpage parent;
 	private ArrayList<String> values;
@@ -21,7 +21,7 @@ public class ZCselector implements ZCcomponent
 	
 	public ZCselector()
 	{
-		shape = new Rectangle(50, 50, 100, 15);
+		shape = new PolyShape(50, 50, 100, 15, PolyShape.SHAPE.RECTANGLE);
 		name = "Standard";
 		values = new ArrayList<String>();
 		values.add("standard");
@@ -31,10 +31,10 @@ public class ZCselector implements ZCcomponent
 		image = null;
 		visible = true;
 		parent = null;
-		left = new ZCbutton(new Rectangle(shape.x - 15, shape.y, 15, shape.height), "<", false, new Value(propChange.getStr(), -1, false),true, null, null, null);
-		right = new ZCbutton(new Rectangle(shape.x + shape.width, shape.y, 15, shape.height), ">", false, new Value(propChange.getStr(), 1, false),true, null, null, null);
+		left = new ZCsubButton(this, new PolyShape(shape.getX() - 15, shape.getY(), 15, shape.getHeight(), PolyShape.SHAPE.RECTANGLE), "<", false, new Value(propChange.getStr(), -1, false),true, null, null, null);
+		right = new ZCsubButton(this, new PolyShape(shape.getX() + shape.getWidth(), shape.getY(), 15, shape.getHeight(), PolyShape.SHAPE.RECTANGLE), ">", false, new Value(propChange.getStr(), 1, false),true, null, null, null);
 	}
-	public ZCselector(Rectangle form, String nam, ArrayList<String> selections, int firstSelect, Value propC, ZCvisual img, ZCbutton lButton, ZCbutton rButton)
+	public ZCselector(PolyShape form, String nam, ArrayList<String> selections, int firstSelect, Value propC, ZCvisual img, ZCsubButton lButton, ZCsubButton rButton)
 	{
 		shape = form;
 		name = nam;
@@ -51,8 +51,8 @@ public class ZCselector implements ZCcomponent
 		visible = true;
 		if(lButton == null || rButton == null)
 		{
-			left = new ZCbutton(new Rectangle(shape.x - 15, shape.y, 15, shape.height), "<", false, new Value(propChange.getStr(), -1, false),true, null, null, null);
-			right = new ZCbutton(new Rectangle(shape.x + shape.width, shape.y, 15, shape.height), ">", false, new Value(propChange.getStr(), 1, false),true, null, null, null);
+			left = new ZCsubButton(this, new PolyShape(shape.getX() - 15, shape.getY(), 15, shape.getHeight(), PolyShape.SHAPE.RECTANGLE), "<", false, new Value(propChange.getStr(), -1, false),true, null, null, null);
+			right = new ZCsubButton(this, new PolyShape(shape.getX() + shape.getWidth(), shape.getY(), 15, shape.getHeight(), PolyShape.SHAPE.RECTANGLE), ">", false, new Value(propChange.getStr(), 1, false),true, null, null, null);
 		}
 		else
 		{
@@ -63,18 +63,22 @@ public class ZCselector implements ZCcomponent
 	}
 	public boolean mousify(int a, int b, int type)
 	{
-		return shape.contains(a, b);
+		boolean moused = shape.contains(a, b);
+		moused |= left.mousify(a, b, type);
+		moused |= right.mousify(a, b, type);
+		return moused;
 	}
 	public boolean keyify(int code, char key, int type)
 	{
-		if((code == KeyEvent.VK_LEFT || code == KeyEvent.VK_DOWN) && getState().getNum() > 0 && type == 1)
+		int num = getState().getNum();
+		if((code == KeyEvent.VK_LEFT || code == KeyEvent.VK_UP) && num > 0 && type == 1)
 		{
-			parent.adjustProp(propChange.getStr(), new Value(null, getState().getNum() - 1, false));
+			parent.adjustProp(propChange.getStr(), new Value(values.get(num - 1), num - 1, false));
 			return true;
 		}
-		if((code == KeyEvent.VK_RIGHT || code == KeyEvent.VK_UP) && getState().getNum() < values.size() && type == 1)
+		if((code == KeyEvent.VK_RIGHT || code == KeyEvent.VK_DOWN) && num < values.size() - 1 && type == 1)
 		{
-			parent.adjustProp(propChange.getStr(), new Value(null, getState().getNum() + 1, false));
+			parent.adjustProp(propChange.getStr(), new Value(values.get(num + 1), num + 1, false));
 			return true;
 		}
 		return false;
@@ -87,13 +91,21 @@ public class ZCselector implements ZCcomponent
 	{
 		return parent.getProp(propChange.getStr());
 	}
+	public PolyShape getShape()
+	{
+		return shape;
+	}
+	public void translate(int x, int y)
+	{
+		shape.translate(x, y);
+		left.translate(x, y);
+		right.translate(x, y);
+	}
 	public void setPage(ZCpage page)
 	{
 		parent = page;
 		if(parent != null)
 		{
-			parent.add(left);
-			parent.add(right);
 			if(selection < values.size() && selection >= 0)
 				parent.adjustProp(name, new Value(values.get(selection), selection, false));
 			else
@@ -101,29 +113,27 @@ public class ZCselector implements ZCcomponent
 				selection = 0;
 				parent.adjustProp(name, new Value(values.get(selection), selection, false));
 			}
-			parent.addListener(name, this);
 		}
 	}
-	public void shout(String name, Value value)
+	public void notify(ZCsubButton button, boolean clickOn)
 	{
-		if(name.equals(propChange.getStr()))
+		int num = getState().getNum();
+		if(button == left && num > 0 && clickOn)
 		{
-			if(value.getNum() >= values.size())
-				value.setNum(values.size() - 1);
-			else if(value.getNum() < 0)
-				value.setNum(0);
-			if(value.getNum() != selection)
-			{
-				selection = value.getNum();
-				parent.adjustProp(name, new Value(values.get(selection), value.getNum(), false));
-			}
+			parent.adjustProp(propChange.getStr(), new Value(values.get(num - 1), num - 1, false));
+		}
+		else if(button == right && num < values.size() - 1 && clickOn)
+		{
+			parent.adjustProp(propChange.getStr(), new Value(values.get(num + 1), num + 1, false));
 		}
 	}
-	public void draw(Graphics2D g)
+	public void draw(Graphics2D g, boolean drawVertices)
 	{
 		g.setColor(Color.white);
-		g.fill(shape);
+		shape.fill(g, drawVertices);
 		g.setColor(Color.black);
-		g.drawString(getState().getStr(), shape.x + 5, shape.y + (shape.height / 2) + 6);
+		g.drawString(getState().getStr(), shape.getX() + 5, shape.getY() + (shape.getHeight() / 2) + 6);
+		left.draw(g, drawVertices);
+		right.draw(g, drawVertices);
 	}
 }

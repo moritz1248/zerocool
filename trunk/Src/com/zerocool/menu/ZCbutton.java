@@ -3,28 +3,29 @@ package com.zerocool.menu;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import java.awt.Shape;
+import java.awt.Polygon;
+
+//TODO: Advanced text positioning
 
 //will allow a user to use a button
 public class ZCbutton implements ZCcomponent
 {
-	private Shape shape;
-	private String name;
+	public final int NOTHING = 0;
+	public final int HIGHLIGHTED = 1;
+	public final int SELECTED = 2;
+	protected PolyShape shape;
+	protected String name;
 	//state: str=name, num=state
-	//0 = nothing
-	//1 = highlighted
-	//2 = selected
-	//3???selected and hightlighted
-	private Value state, propChange;
-	private ZCvisual image, selection, highlight;
-	private boolean visible;
+	protected Value state, propChange;
+	protected ZCvisual image, selection, highlight;
+	protected boolean visible;
 	//if toIncrement == true then value += state.num else value = state.num or 0
-	private boolean toIncrement;
-	private ZCpage parent;
+	protected boolean toIncrement;
+	protected ZCpage parent;
 	
 	public ZCbutton()
 	{
-		shape = new Rectangle(300, 300, 50, 50);
+		shape = new PolyShape(300, 300, 50, 50, PolyShape.SHAPE.OVAL);
 		name = "empty";
 		visible = true;
 		state = new Value(name, 0, false);
@@ -32,7 +33,7 @@ public class ZCbutton implements ZCcomponent
 		propChange = new Value(name, 1, false);
 		toIncrement = false;
 	}
-	public ZCbutton(Shape form,String nam,boolean selected,Value propC,boolean inc, ZCvisual img, ZCvisual select, ZCvisual high)
+	public ZCbutton(PolyShape form,String nam,boolean selected,Value propC,boolean inc, ZCvisual img, ZCvisual select, ZCvisual high)
 	{
 		shape = form;
 		name = nam;
@@ -50,31 +51,31 @@ public class ZCbutton implements ZCcomponent
 	public boolean mousify(int a, int b, int type)
 	{
 		boolean isMousified = shape != null && shape.contains(a, b);
-		if(isMousified && type == 0 && state.getNum() < 2)
+		if(isMousified && type == 0 && state.getNum() < SELECTED)
 		{
 			if(toIncrement)
 			{
 				parent.adjustProp(propChange.getStr(), new Value(null, propChange.getNum() + parent.getProp(propChange.getStr()).getNum(), false));
-				state.setNum(1);
+				state.setNum(HIGHLIGHTED);
 			}
 			else
 			{
 				parent.adjustProp(propChange.getStr(), new Value(null, propChange.getNum(), false));
-				state.setNum(2);
+				state.setNum(SELECTED);
 			}
 		}
-		else if(isMousified && type == 0 && state.getNum() == 2)
+		else if(isMousified && type == 0 && state.getNum() == SELECTED)
 		{
-			state.setNum(1);
+			state.setNum(HIGHLIGHTED);
 			if(!toIncrement)
 				parent.adjustProp(propChange.getStr(), new Value(null, 0, false));
 		}
-		else if(isMousified && type == 1 && state.getNum() == 0)
-			state.setNum(1);
-		else if(!isMousified && type == 1 && state.getNum() == 1)
-			state.setNum(0);
-		else if(!isMousified && type == 0 && state.getNum() > 0 && toIncrement)
-			state.setNum(0);
+		else if(isMousified && type == 1 && state.getNum() == NOTHING)
+			state.setNum(HIGHLIGHTED);
+		else if(!isMousified && type == 1 && state.getNum() == HIGHLIGHTED)
+			state.setNum(NOTHING);
+		else if(!isMousified && type == 0 && state.getNum() > NOTHING && toIncrement)
+			state.setNum(NOTHING);
 		return isMousified;
 	}
 	public boolean keyify(int code, char key, int type)
@@ -89,38 +90,46 @@ public class ZCbutton implements ZCcomponent
 	{
 		return state;
 	}
+	public PolyShape getShape()
+	{
+		return shape;
+	}
 	public void setPage(ZCpage page)
 	{
 		parent = page;
 	}
-	public void shout(String name, Value value)
+	public void notify(ZCsubButton button, boolean clickOn)
 	{
 	}
-	public void draw(Graphics2D g)
+	public void translate(int x, int y)
+	{
+		shape.translate(x, y);
+	}
+	public void draw(Graphics2D g, boolean drawVertices)
 	{
 		if(image != null)
-			image.draw(g);
+			image.draw(g, drawVertices);
 		else
 		{
 			g.setColor(Color.black);
-			g.fill(shape);
+			shape.fill(g, drawVertices);
 			g.setColor(Color.white);
 			Rectangle bounds = shape.getBounds();
 			g.drawString(name, bounds.x + 5, bounds.y + (bounds.height / 2) + 6);
 		}
-		if(state.getNum() == 1 && highlight != null)
-			highlight.draw(g);
-		else if(state.getNum() == 1 && highlight == null)
+		if(state.getNum() == HIGHLIGHTED && highlight != null)
+			highlight.draw(g, drawVertices);
+		else if(state.getNum() == HIGHLIGHTED && highlight == null)
 		{
 			g.setColor(Color.yellow);
-			g.draw(shape);
+			shape.draw(g, false);
 		}
-		else if(state.getNum() == 2 && selection != null)
-			selection.draw(g);
-		else if(state.getNum() == 2 && selection == null)
+		else if(state.getNum() == SELECTED && selection != null)
+			selection.draw(g, drawVertices);
+		else if(state.getNum() == SELECTED && selection == null)
 		{
 			g.setColor(Color.red);
-			g.draw(shape);
+			shape.draw(g, false);
 		}
 	}
 }

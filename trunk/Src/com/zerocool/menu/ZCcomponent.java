@@ -10,7 +10,9 @@ public interface ZCcomponent extends Serializable
 	boolean keyify(int code, char key, int type);
 	boolean isVisible();
 	Value getState();
-	void draw(Graphics2D g);
+	PolyShape getShape();
+	void draw(Graphics2D g, boolean drawVertices);
 	void setPage(ZCpage page);
-	void shout(String name, Value value);
+	void notify(ZCsubButton button, boolean clickOn);
+	void translate(int x, int y);
 }
