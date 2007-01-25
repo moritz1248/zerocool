@@ -6,8 +6,10 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowListener;
 import java.awt.event.WindowEvent;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.io.File;
 
 public class MEpanel extends JTabbedPane implements ActionListener, WindowListener
 {
@@ -17,7 +19,9 @@ public class MEpanel extends JTabbedPane implements ActionListener, WindowListen
 	private JLabel welcomeL;
 	private JMenuBar menubar;
 	private JMenu file, edit, properties, help;
-	private JMenuItem exitMI, closeTabMI;//...
+	private JMenuItem exitMI, closeTabMI, newPageMI, newVisualMI, saveCurMI, 
+		saveAllMI, loadPageMI, loadVisualMI;//...
+	private File lastAccessed;
 	
 	public MEpanel(JFrame frame)
 	{
@@ -49,10 +53,32 @@ public class MEpanel extends JTabbedPane implements ActionListener, WindowListen
 		//menu items
 		exitMI = new JMenuItem("Exit");
 		exitMI.addActionListener(this);
-		file.add(exitMI);
 		closeTabMI = new JMenuItem("Close this tab");
 		closeTabMI.addActionListener(this);
+		newPageMI = new JMenuItem("New Page");
+		newPageMI.addActionListener(this);
+		newVisualMI = new JMenuItem("New Visual");
+		newVisualMI.addActionListener(this);
+		saveCurMI = new JMenuItem("Save Current Tab");
+		saveCurMI.addActionListener(this);
+		saveAllMI = new JMenuItem("Save All");
+		saveAllMI.addActionListener(this);
+		loadPageMI = new JMenuItem("Load a Page");
+		loadPageMI.addActionListener(this);
+		loadVisualMI = new JMenuItem("Load a Visual");
+		loadVisualMI.addActionListener(this);
+		//add menu items to menu
+		file.add(newPageMI);
+		file.add(newVisualMI);
+		file.addSeparator();
+		file.add(loadPageMI);
+		file.add(loadVisualMI);
+		file.addSeparator();
+		file.add(saveCurMI);
+		file.add(saveAllMI);
+		file.addSeparator();
 		file.add(closeTabMI);
+		file.add(exitMI);
 		//add menus to menubar
 		menubar.add(file);
 		menubar.add(edit);
@@ -72,11 +98,78 @@ public class MEpanel extends JTabbedPane implements ActionListener, WindowListen
 			System.exit(0);
 		}
 		else if(e.getSource() == closeTabMI)
+		{
 			remove(getSelectedIndex());
-		else if(e.getSource() == newPageButt)
-			setSelectedComponent(add("Page", new MEpagePanel()));
-		else if(e.getSource() == newVisualButt)
-			setSelectedComponent(add("Visual", new MEvisualPanel()));
+		}
+		else if(e.getSource() == newPageButt || e.getSource() == newPageMI)
+		{
+			setSelectedComponent(add("Page", new MEpagePanel(lastAccessed)));
+		}
+		else if(e.getSource() == newVisualButt || e.getSource() == newVisualMI)
+		{
+			setSelectedComponent(add("Visual", new MEvisualPanel(lastAccessed)));
+		}
+		else if(e.getSource() == saveCurMI)
+		{
+			save(false);
+		}
+		else if(e.getSource() == saveAllMI)
+		{
+			save(true);
+		}
+		else if(e.getSource() == loadPageMI)
+		{
+			loadPage();
+		}
+		else if(e.getSource() == loadVisualMI)
+		{
+			loadVisual();
+		}
+	}
+	
+	private void save(boolean saveAll)
+	{
+		if(saveAll)
+		{
+			int max = getTabCount();
+			for(int c = 0; c < max; c++)
+			{
+				Component comp = getComponentAt(c);
+				if(comp instanceof MEpagePanel)
+				{
+					((MEpagePanel)comp).save();
+				}
+				else if(comp instanceof MEvisualPanel)
+				{
+					((MEvisualPanel)comp).save();
+				}
+			}
+		}
+		else
+		{
+			Component comp = getSelectedComponent();
+			if(comp instanceof MEpagePanel)
+			{
+				((MEpagePanel)comp).save();
+			}
+			else if(comp instanceof MEvisualPanel)
+			{
+				((MEvisualPanel)comp).save();
+			}
+		}
+	}
+	
+	private void loadPage()
+	{
+		MEpagePanel mepp = new MEpagePanel(lastAccessed);
+		mepp.load(false);
+		setSelectedComponent(add("Page", mepp));
+	}
+	private void loadVisual()
+	{
+		MEvisualPanel mevp = new MEvisualPanel(lastAccessed);
+		mevp.load(false);
+		setSelectedComponent(add("Visual", mevp));
 	}
 	
 	public void windowClosing(WindowEvent w)

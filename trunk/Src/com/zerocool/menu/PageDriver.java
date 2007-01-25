@@ -3,11 +3,21 @@ package com.zerocool.menu;
 import java.awt.event.MouseEvent;
 import javax.swing.event.MouseInputListener;
 import java.awt.event.*;
+
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JFrame;
+
+import com.zerocool.editor.ZCfileFilter;
+
 import java.util.ArrayList;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 
 //i'm going to create a menu editor which will make it so we can
 //easily fine tune and/or redo the menu system at a moments notice
@@ -39,11 +49,14 @@ public class PageDriver extends JPanel implements MouseInputListener, KeyListene
 		//load from file
 		pages = loadPages();
 		if(pages != null && pages.size() > 0)
+		{
 			current = pages.get(0);
+		}
 		else
+		{
 			System.out.println("Error: no input read");
-		
-		current = new ZCpage(this);
+			current = new ZCpage(this);
+		}
 		
 		pages.add(current);
 	}
@@ -65,7 +78,43 @@ public class PageDriver extends JPanel implements MouseInputListener, KeyListene
 	
 	public ArrayList<ZCpage> loadPages()
 	{
-		return new ArrayList<ZCpage>();
+		ArrayList<ZCpage> pages = new ArrayList<ZCpage>();
+		pages.add(load(null));
+		return pages;
+	}
+	
+	public ZCpage load(File f)
+	{
+		ZCpage page = null;
+		JFileChooser chooser = new JFileChooser(f);
+		chooser.setFileFilter(new ZCfileFilter(".zcm"));
+		int choice = chooser.showOpenDialog(this);
+	    if(choice == JFileChooser.APPROVE_OPTION && chooser.getSelectedFile() != null)
+	    {
+	    	File file = chooser.getSelectedFile();
+			//this code opens the file
+			try
+			{
+				FileInputStream fileIS = new FileInputStream(file);
+				ObjectInputStream inStream = new ObjectInputStream(fileIS);
+				ZCpage newPage = (ZCpage)inStream.readObject();
+				if(newPage != null)
+				{
+					page = newPage;
+					page.setParent(this);
+				}
+			}
+			catch(IOException e)
+			{
+				System.out.println("IOException thrown while trying to open page " + file + ";  Exception caught");
+				System.out.println(e.toString());
+			}
+			catch(ClassNotFoundException e)
+			{
+				System.out.println("ClassNotFoundException thrown while trying to open page " + file + ";  Exception caught");
+			}
+	    }
+	    return page;
 	}
 	
 	//mouse stuff

@@ -379,6 +379,7 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 		if(choice == JOptionPane.YES_OPTION)
 			saved();
 		JFileChooser chooser = new JFileChooser(lastAccessed);
+		chooser.setFileFilter(new ZCfileFilter(".zcl"));
 		choice = chooser.showOpenDialog(this);
 	    if(choice == JFileChooser.APPROVE_OPTION && chooser.getSelectedFile() != null)
 	    {
@@ -414,10 +415,22 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 	public boolean saved()
 	{
 		JFileChooser chooser = new JFileChooser(lastAccessed);
+		chooser.setFileFilter(new ZCfileFilter(".zcl"));
 		int choice = chooser.showSaveDialog(this);
 	    if(choice == JFileChooser.APPROVE_OPTION && chooser.getSelectedFile() != null)
 	    {
 			File file = chooser.getSelectedFile();
+			//make sure the file is in the right format
+			String path = file.getAbsolutePath();
+			if(!path.endsWith(".zcl"))
+			{
+				if(path.lastIndexOf('.') >= path.length() - 5)
+				{
+					return false;
+				}
+				path += ".zcl";
+			}
+			file = new File(path);
 			report("Attempting to save as " + file);
 			lastAccessed = file;
 			//this code saves the file
@@ -429,12 +442,12 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 			}
 			catch(FileNotFoundException e)
 			{
-				report("FileNotFoundException thrown while trying to save level as " + file + ".dat;  Exception caught");
+				report("FileNotFoundException thrown while trying to save level as " + file + ".zcl;  Exception caught");
 				return false;
 			}
 			catch(IOException e)
 			{
-				report("IOException thrown while trying to save level as " + file + ".dat;  Exception caught");
+				report("IOException thrown while trying to save level as " + file + ".zcl;  Exception caught");
 				report(e.toString());
 				return false;
 			}

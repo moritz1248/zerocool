@@ -18,7 +18,8 @@ public class ZCtextbox implements ZCcomponent
 	//should the caret be drawn here or should it be represented by a dynamic ZCvisual (probably better)
 	//i'm just going to make the caret a static image
 	private int caret, start, offset;
-	private TextLayout layout;
+	//transient data...mmm
+	private transient TextLayout layout;
 	private float x, y;
 	private boolean shiftPressed;
 	

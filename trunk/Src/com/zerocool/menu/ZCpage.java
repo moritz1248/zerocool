@@ -14,7 +14,7 @@ import java.awt.event.ActionEvent;
 //holds all the components for a page as well as a properties object
 public class ZCpage implements Serializable, ActionListener
 {
-	private JPanel parent;
+	private transient JPanel parent;
 	private ArrayList<ZCcomponent> components;
 	private ZCproperties properties;
 	private ZCcomponent focus;
@@ -42,6 +42,11 @@ public class ZCpage implements Serializable, ActionListener
 		add(s1);
 		add(s2);
 		add(tb1);
+	}
+	
+	public void setParent(JPanel driver)
+	{
+		parent = driver;
 	}
 	
 	public void add(ZCcomponent newComp)

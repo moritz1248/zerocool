@@ -4,8 +4,9 @@ import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.Graphics2D;
 import java.awt.Color;
+import java.io.Serializable;
 
-public class PolyShape 
+public class PolyShape implements Serializable
 {
 	public enum SHAPE {RECTANGLE, POLYGON, OVAL, LINE};
 	public static final Color color = Color.magenta;
