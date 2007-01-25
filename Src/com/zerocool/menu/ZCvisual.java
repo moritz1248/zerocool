@@ -4,6 +4,7 @@ import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.awt.image.BufferedImage;
+import java.io.Serializable;
 
 //will cover images and text, static and dynamic
 public class ZCvisual implements ZCcomponent
@@ -89,7 +90,7 @@ public class ZCvisual implements ZCcomponent
 	//PRIVATE CLASS
 	
 	//here is where the power lies
-	public class Step
+	public class Step implements Serializable
 	{
 		//x# and y# can represent location and/or width/height and/or something else
 		private int[][] props;

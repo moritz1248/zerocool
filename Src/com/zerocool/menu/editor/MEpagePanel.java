@@ -1,15 +1,15 @@
 package com.zerocool.menu.editor;
 
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.event.MouseInputListener;
-
-import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
-
+import java.io.*;
+import com.zerocool.editor.ZCfileFilter;
 import com.zerocool.menu.*;
 
 public class MEpagePanel extends JPanel implements MouseInputListener
@@ -20,14 +20,15 @@ public class MEpagePanel extends JPanel implements MouseInputListener
 	private boolean firstTime;
 	private int height, width;
 	private ZCcomponent current;
-	private int vertex;
 	private int lastX, lastY;
+	private File lastAccessed;
 	
-	public MEpagePanel()
+	public MEpagePanel(File lastAccessed)
 	{
 		page = new ZCpage(this);
 		addMouseListener(this);
 		addMouseMotionListener(this);
+		this.lastAccessed = lastAccessed;
 	}
 	
 	public void paint(Graphics g)
@@ -44,7 +45,91 @@ public class MEpagePanel extends JPanel implements MouseInputListener
 			page.draw(g2, true);
 		g.drawImage(screen, 0, 0, null);
 	}
-
+	//use .zcm extension
+	public void load(boolean saveRequired)
+	{
+		int choice;
+		if(saveRequired)
+		{
+			choice = JOptionPane.showConfirmDialog(this, "Do you want to save the current page first?", "Save?", JOptionPane.YES_NO_OPTION);
+			if(choice == JOptionPane.YES_OPTION)
+				save();
+		}
+		JFileChooser chooser = new JFileChooser(lastAccessed);
+		chooser.setFileFilter(new ZCfileFilter(".zcm"));
+		choice = chooser.showOpenDialog(this);
+	    if(choice == JFileChooser.APPROVE_OPTION && chooser.getSelectedFile() != null)
+	    {
+	    	File file = chooser.getSelectedFile();
+	    	lastAccessed = file;
+			//this code opens the file
+			try
+			{
+				FileInputStream fileIS = new FileInputStream(file);
+				ObjectInputStream inStream = new ObjectInputStream(fileIS);
+				ZCpage newPage = (ZCpage)inStream.readObject();
+				if(newPage != null)
+				{
+					page = newPage;
+					page.setParent(this);
+				}
+			}
+			catch(IOException e)
+			{
+				System.out.println("IOException thrown while trying to open page " + file + ";  Exception caught");
+				System.out.println(e.toString());
+			}
+			catch(ClassNotFoundException e)
+			{
+				System.out.println("ClassNotFoundException thrown while trying to open page " + file + ";  Exception caught");
+			}
+	    }
+	    repaint();
+	}
+	public boolean save()
+	{
+		JFileChooser chooser = new JFileChooser(lastAccessed);
+		chooser.setFileFilter(new ZCfileFilter(".zcm"));
+		int choice = chooser.showSaveDialog(this);
+	    if(choice == JFileChooser.APPROVE_OPTION && chooser.getSelectedFile() != null)
+	    {
+			File file = chooser.getSelectedFile();
+			//make sure the file is in the right format
+			String path = file.getAbsolutePath();
+			if(!path.endsWith(".zcm"))
+			{
+				if(path.lastIndexOf('.') >= path.length() - 5)
+				{
+					return false;
+				}
+				path += ".zcm";
+			}
+			file = new File(path);
+			System.out.println("Attempting to save as " + file);
+			lastAccessed = file;
+			//this code saves the file
+			try
+			{
+				FileOutputStream fileOS = new FileOutputStream(file);
+				ObjectOutputStream outStream = new ObjectOutputStream (fileOS);
+				outStream.writeObject(page);
+			}
+			catch(FileNotFoundException e)
+			{
+				System.out.println("FileNotFoundException thrown while trying to save page as " + file + "; Exception caught");
+				return false;
+			}
+			catch(IOException e)
+			{
+				System.out.println("IOException thrown while trying to save page as " + file + "; Exception caught");
+				System.out.println(e.toString());
+				return false;
+			}
+			return true;
+		}
+		return false;
+	}
+	
 	public void mouseClicked(MouseEvent m)
 	{
 		boolean update = false;
