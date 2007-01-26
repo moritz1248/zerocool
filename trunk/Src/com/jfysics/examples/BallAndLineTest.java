@@ -18,7 +18,7 @@ public class BallAndLineTest extends JPanel
 {
 	int numLines = 2;
 	int numBalls = 90;
-	Vector2d gravity = new Vector2d(0, 0.05);
+	Vector2d gravity = new Vector2d(0, 0.02);
 	BallObject[] balls = new BallObject[numBalls];
 	Line2d[] lines = new Line2d[numLines];
 	Line2d[] lineNormals = new Line2d[numLines];
@@ -53,7 +53,7 @@ public class BallAndLineTest extends JPanel
 		frame.pack();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setVisible(true);
-		Timer t = new Timer(10, new ActionListener(){
+		Timer t = new Timer(20, new ActionListener(){
 
 			public void actionPerformed(ActionEvent e) {
 				repaint();
@@ -82,7 +82,7 @@ public class BallAndLineTest extends JPanel
 				test.setP1(lineNormals[i].getP1().add(ball.getPosition().add(new Vector2d(gravity.getX() * 4, gravity.getY() * 4))));
 				test.setP2(lineNormals[i].getP2().add(ball.getPosition().add(new Vector2d(gravity.getX() * 4, gravity.getY() * 4))));
 				g.setColor(Color.RED);
-				g.drawLine((int)test.getP1().getX(),(int)test.getP1().getY(),(int)test.getP2().getX(),(int)test.getP2().getY());
+				//g.drawLine((int)test.getP1().getX(),(int)test.getP1().getY(),(int)test.getP2().getX(),(int)test.getP2().getY());
 				
 				Vector2d intersect = lines[i].getIntersection(test);
 				if(lines[i].isOnSegment(intersect, test)){
@@ -92,7 +92,7 @@ public class BallAndLineTest extends JPanel
 					double ballAngle = Math.atan(ball.getVelocity().getY() / ball.getVelocity().getX());
 					double ballSpeed = ball.getVelocity().getDistance();
 					double newAngle;
-					System.out.println(ballAngle);
+					//System.out.println(ballAngle);
 					if(lineAngle > 0 && lineAngle < Math.PI / 2){
 						newAngle = ballAngle + (lineAngle + ballAngle);
 					}else{
@@ -109,16 +109,19 @@ public class BallAndLineTest extends JPanel
 				}
 			}
 			if(isHit){
-				g.setColor(Color.BLACK);
-				g.fillOval((int)ball.getPosition().getX() - 10, (int)ball.getPosition().getY() - 10, 20, 20);
 				g.setColor(Color.GREEN);
-				g.fillOval((int)ball.getPosition().getX() - 9, (int)ball.getPosition().getY() - 9, 18, 18);
-				
-			}else{
-				g.setColor(Color.BLACK);
 				g.fillOval((int)ball.getPosition().getX() - 10, (int)ball.getPosition().getY() - 10, 20, 20);
+	
+				g.setColor(Color.BLACK);
+				g.drawOval((int)ball.getPosition().getX() - 10, (int)ball.getPosition().getY() - 10, 19, 19);
+			
+			}
+			else{
 				g.setColor(Color.GRAY);
-				g.fillOval((int)ball.getPosition().getX() - 9, (int)ball.getPosition().getY() - 9, 18, 18);
+				g.fillOval((int)ball.getPosition().getX() - 10, (int)ball.getPosition().getY() - 10, 20, 20);
+				g.setColor(Color.BLACK);
+				g.drawOval((int)ball.getPosition().getX() - 10, (int)ball.getPosition().getY() - 10, 19, 19);
+
 			}
 		}
 	}
