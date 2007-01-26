@@ -18,22 +18,33 @@ import com.jfysics.math.vector.Vector2d;
 
 public class LineIntersection extends JPanel{
 	Line2d lineTest = new Line2d(150, 50, 150, 100);
-	Line2d[] lines = new Line2d[10];
+	int numLines = 50;
+	Line2d[] lines = new Line2d[numLines];
+	Line2d[] lineNormals = new Line2d[numLines];
+    int width = 500;
+	int height = 500;
 	public static void main(String ... args){
 		new LineIntersection();
 	}
 	public LineIntersection(){
 		super();
 		for(int i = 0; i < lines.length; i++){
-			lines[i] = new Line2d((int)(Math.random() * 400 + 50), (int)(Math.random() * 400 + 50),(int)(Math.random() * 400 + 50),(int)(Math.random() * 400 + 50));
+			lines[i] = new Line2d((int)(Math.random() * (width-100) + 50), (int)(Math.random() * (height - 100) + 50),(int)(Math.random() * (width - 100) + 50),(int)(Math.random() * (height - 100) + 50));
+		}
+		for(int i = 0; i < lines.length; i++){
+			Vector2d normal = lines[i].getNormal();
+			Vector2d midpoint = lines[i].getMidPoint();
+			Vector2d point1 = new Vector2d(midpoint.getX() + (normal.getX() * 5), midpoint.getY() + (normal.getY() * 5));
+			Vector2d point2 = new Vector2d(midpoint.getX() - (normal.getX() * 5), midpoint.getY() - (normal.getY() * 5));
+			lineNormals[i] = new Line2d(point1, point2);
 		}
 		JFrame frame = new JFrame("Line Intersection Example");
-		setPreferredSize(new Dimension(500,500));
+		setPreferredSize(new Dimension(width,height));
 		frame.getContentPane().add(this);
 		frame.pack();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setVisible(true);
-		Timer t = new Timer(1, new ActionListener(){
+		Timer t = new Timer(10, new ActionListener(){
 
 			public void actionPerformed(ActionEvent e) {
 				repaint();
@@ -85,7 +96,11 @@ public class LineIntersection extends JPanel{
 		});
 	}
 	public void paintComponent(Graphics g){
-		g.clearRect(0,0,500,500);
+		g.clearRect(0,0,width,height);
+		/*for(Line2d line : lineNormals){
+			g.setColor(Color.RED);
+			g.drawLine((int)line.getP1().getX(),(int)line.getP1().getY(),(int)line.getP2().getX(),(int)line.getP2().getY());
+		}*/
 		for(Line2d line : lines){
 			g.setColor(Color.BLACK);
 			g.drawLine((int)line.getP1().getX(),(int)line.getP1().getY(),(int)line.getP2().getX(),(int)line.getP2().getY());
@@ -98,20 +113,21 @@ public class LineIntersection extends JPanel{
 			for(int i = 0; i < lines.length; i++){
 
 				if(lines[i] != null)
-
-					if(lines[i].intersects(lineTest) != null){
+				{
+					Vector2d intersect = lines[i].getIntersection(lineTest);
+					if(lines[i].isOnSegment(intersect, lineTest)){
 						amount++;
 						g.setColor(Color.BLACK);
-						g.fillOval((int)lines[i].intersects(lineTest).getX() - 5, (int)lines[i].intersects(lineTest).getY() - 5, 10, 10);
+						g.fillOval((int)intersect.getX() - 5, (int)intersect.getY() - 5, 10, 10);
 						g.setColor(Color.GREEN);
-						g.fillOval((int)lines[i].intersects(lineTest).getX() - 4, (int)lines[i].intersects(lineTest).getY() - 4, 8, 8);
-					}else{
+						g.fillOval((int)intersect.getX() - 4, (int)intersect.getY() - 4, 8, 8);
+					}/*else{
 						g.setColor(Color.BLACK);
-						g.fillOval((int)lines[i].intersects(lineTest).getX() - 5, (int)lines[i].intersects(lineTest).getY() - 5, 10, 10);
-						g.setColor(Color.GRAY);
-						g.fillOval((int)lines[i].intersects(lineTest).getX() - 4, (int)lines[i].intersects(lineTest).getY() - 4, 8, 8);
-
-					}
+						g.fillOval((int)intersect.getX() - 5, (int)intersect.getY() - 5, 10, 10);
+						g.setColor(Color.RED);
+						g.fillOval((int)intersect.getX() - 4, (int)intersect.getY() - 4, 8, 8);
+					}*/
+				}
 			}
 		g.setColor(Color.BLACK);
 		g.drawString(amount + " intersections.", 10, 10);
