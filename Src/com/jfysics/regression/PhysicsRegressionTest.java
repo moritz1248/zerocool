@@ -13,8 +13,8 @@ public class PhysicsRegressionTest {
 		int test = 1;
 		Line2d line1 = new Line2d(-4, 0, -2, 0);
 		Line2d line2 = new Line2d(4, 4, -2, -2);
-		System.out.println("Line one and two intersect at: " + line1.intersects(line2));
-		view.assertTest(line1.intersects(line2).getX() == 0, "Line Intersection (x)");
-		view.assertTest(line1.intersects(line2).getY() == 0, "Line Intersection (y)");
+		System.out.println("Line one and two intersect at: " + line1.getIntersection(line2));
+		view.assertTest(line1.getIntersection(line2).getX() == 0, "Line Intersection (x)");
+		view.assertTest(line1.getIntersection(line2).getY() == 0, "Line Intersection (y)");
 	}
 }
