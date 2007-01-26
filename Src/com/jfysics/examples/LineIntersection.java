@@ -18,7 +18,7 @@ import com.jfysics.math.vector.Vector2d;
 
 public class LineIntersection extends JPanel{
 	Line2d lineTest = new Line2d(150, 50, 150, 100);
-	int numLines = 50;
+	int numLines = 30;
 	Line2d[] lines = new Line2d[numLines];
 	Line2d[] lineNormals = new Line2d[numLines];
     int width = 500;
@@ -131,5 +131,8 @@ public class LineIntersection extends JPanel{
 			}
 		g.setColor(Color.BLACK);
 		g.drawString(amount + " intersections.", 10, 10);
+		g.setColor(Color.BLUE);
+		g.drawString("Click within the window to change the starting point for the line.", 10, 20);
+		
 	}
 }
