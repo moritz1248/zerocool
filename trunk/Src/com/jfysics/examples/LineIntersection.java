@@ -19,8 +19,9 @@ import com.jfysics.math.vector.Vector2d;
 public class LineIntersection extends JPanel{
 	Line2d lineTest = new Line2d(150, 50, 150, 100);
 	int numLines = 30;
-	Line2d[] lines = new Line2d[numLines];
-	Line2d[] lineNormals = new Line2d[numLines];
+	int MAX_LINES = 3000;
+	Line2d[] lines = new Line2d[MAX_LINES];
+	Line2d[] lineNormals = new Line2d[MAX_LINES];
     int width = 500;
 	int height = 500;
 	public static void main(String ... args){
@@ -28,10 +29,10 @@ public class LineIntersection extends JPanel{
 	}
 	public LineIntersection(){
 		super();
-		for(int i = 0; i < lines.length; i++){
+		for(int i = 0; i < MAX_LINES; i++){
 			lines[i] = new Line2d((int)(Math.random() * (width-100) + 50), (int)(Math.random() * (height - 100) + 50),(int)(Math.random() * (width - 100) + 50),(int)(Math.random() * (height - 100) + 50));
 		}
-		for(int i = 0; i < lines.length; i++){
+		for(int i = 0; i < MAX_LINES; i++){
 			Vector2d normal = lines[i].getNormal();
 			Vector2d midpoint = lines[i].getMidPoint();
 			Vector2d point1 = new Vector2d(midpoint.getX() + (normal.getX() * 5), midpoint.getY() + (normal.getY() * 5));
@@ -48,6 +49,37 @@ public class LineIntersection extends JPanel{
 
 			public void actionPerformed(ActionEvent e) {
 				repaint();
+			}
+			
+		});
+		frame.addKeyListener(new KeyListener(){
+
+			public void keyPressed(KeyEvent e) {
+				if(e.getKeyCode() == e.VK_UP)
+				{
+					System.out.println("ADDED");
+					if(numLines < MAX_LINES)
+					{
+						numLines++;
+						lines[numLines] = new Line2d((int)(Math.random() * (width-100) + 50), (int)(Math.random() * (height - 100) + 50),(int)(Math.random() * (width - 100) + 50),(int)(Math.random() * (height - 100) + 50));
+					}
+				}
+				if(e.getKeyCode() == e.VK_DOWN)
+				{
+					if(numLines > 1)
+						numLines--;
+				}
+				
+			}
+
+			public void keyReleased(KeyEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			public void keyTyped(KeyEvent e) {
+				// TODO Auto-generated method stub
+				
 			}
 			
 		});
@@ -101,7 +133,9 @@ public class LineIntersection extends JPanel{
 			g.setColor(Color.RED);
 			g.drawLine((int)line.getP1().getX(),(int)line.getP1().getY(),(int)line.getP2().getX(),(int)line.getP2().getY());
 		}*/
-		for(Line2d line : lines){
+		for(int i = 0; i < numLines; i++)
+		{
+			Line2d line = lines[i];
 			g.setColor(Color.BLACK);
 			g.drawLine((int)line.getP1().getX(),(int)line.getP1().getY(),(int)line.getP2().getX(),(int)line.getP2().getY());
 		}
@@ -110,7 +144,7 @@ public class LineIntersection extends JPanel{
 		int amount = 0;
 		if(lineTest != null)
 			
-			for(int i = 0; i < lines.length; i++){
+			for(int i = 0; i < numLines; i++){
 
 				if(lines[i] != null)
 				{
@@ -131,8 +165,11 @@ public class LineIntersection extends JPanel{
 			}
 		g.setColor(Color.BLACK);
 		g.drawString(amount + " intersections.", 10, 10);
+		g.setColor(Color.RED);
+		g.drawString(numLines + " lines.", 10, 20);
 		g.setColor(Color.BLUE);
-		g.drawString("Click within the window to change the starting point for the line.", 10, 20);
+		g.drawString("Click within the window to change the starting point for the line.", 10, 30);
+		g.drawString("Use the UP or DOWN keys to add or remove lines.", 10, 40);
 		
 	}
 }
