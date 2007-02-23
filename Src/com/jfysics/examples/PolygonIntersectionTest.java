@@ -22,7 +22,7 @@ import com.jfysics.physics.bodies.polygon.RigidPolygon;
 
 public class PolygonIntersectionTest extends JPanel{
 
-	int poly_count = 20;
+	int poly_count = 10;
 	boolean[] collide = new boolean[poly_count];
 	boolean[] box_collide = new boolean[poly_count];
 	RigidPolygon[] polygons = new RigidPolygon[poly_count];
@@ -107,7 +107,7 @@ public class PolygonIntersectionTest extends JPanel{
 				}
 			if(box_collide[i])
 			{
-				drawBoundingBox(g, polygons[i], Color.red);
+				
 				for(int j = i; j < polygons.length; j++)
 				{
 					Vector2d intersect = polygons[i].checkCollide(polygons[j]);
@@ -124,6 +124,8 @@ public class PolygonIntersectionTest extends JPanel{
 					}
 				}
 			}
+			if(box_collide[i])
+				drawBoundingBox(g, polygons[i], Color.red);
 			if(collide[i])
 				drawPolygon(g, polygons[i], false, Color.red);
 			else
