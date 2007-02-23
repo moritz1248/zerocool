@@ -2,12 +2,12 @@ package com.jfysics.physics.bodies;
 
 import com.jfysics.math.vector.Vector2d;
 
-public class RigidBodyObject {
+public abstract class RigidBodyObject {
+	protected BoundingBox bounds;
 	protected Vector2d centerOfMass;
 	protected Vector2d velocity;
 	protected Vector2d position;
 	protected double density;
-	protected double boobs;
 	public RigidBodyObject(Vector2d pos){
 		this.position = pos;
 		velocity = new Vector2d();
@@ -37,4 +37,6 @@ public class RigidBodyObject {
 	public void setVelocity(Vector2d velocity) {
 		this.velocity = velocity;
 	}
+	public abstract BoundingBox getBounds();
+	public abstract void updateGeometry();
 }

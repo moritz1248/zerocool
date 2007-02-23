@@ -30,4 +30,17 @@ public class BoundingBox {
 				(max.getX() < min2.getX()) || (max.getY() < min2.getY()) ||
 				(max2.getX() < min.getX()) || (max2.getY() < min.getY())); 
 	}
+	public double getWidth()
+	{
+		return max.getX() - min.getX();
+	}
+	
+	public double getHeight()
+	{
+		return max.getY() - min.getY();
+	}
+	public static BoundingBox translateBounds(BoundingBox bounds, Vector2d position) {
+		BoundingBox box = new BoundingBox(bounds.getMinimum().add(position), bounds.getMaximum().add(position));
+		return box;
+	}
 }
