@@ -43,7 +43,7 @@ import com.zerocool.scene.level.Level;
  * @author Chris Gibson
  * @version ZeroCoolApp.java,v 0.1 2006/10/03
  */
-public class ZeroCoolApp extends SimpleGame{
+public class ZeroCoolApp extends SimpleZCGame{
 	
 	/*
 	 * MANAGERS
@@ -210,11 +210,19 @@ public class ZeroCoolApp extends SimpleGame{
 	{
 		if(Keyboard.isCreated()){
 			if(Keyboard.isKeyDown(Keyboard.KEY_Q)){
-				CullState cs = display.getRenderer().createCullState();
-				
-				cs.setCullMode(CullState.CS_FRONT);
-				rootNode.setRenderState(cs);
-				//rootNode.setCullMode(SceneElement.CULL_ALWAYS);
+			    // Get current size of heap in bytes
+			    long heapSize = Runtime.getRuntime().totalMemory();
+			    
+			    // Get maximum size of heap in bytes. The heap cannot grow beyond this size.
+			    // Any attempt will result in an OutOfMemoryException.
+			    long heapMaxSize = Runtime.getRuntime().maxMemory();
+			    
+			    // Get amount of free memory within the heap in bytes. This size will increase
+			    // after garbage collection and decrease as new objects are created.
+			    long heapFreeSize = Runtime.getRuntime().freeMemory();
+			    System.out.println("--HEAP SIZE: " + heapSize);
+			    System.out.println("--MAX HEAP: " + heapMaxSize);
+			    System.out.println("--FREE MEMORY: " + heapFreeSize);
 			}
 			if(Keyboard.isKeyDown(Keyboard.KEY_W))
 				userCamera.setHeight(userCamera.getHeight() + (1f / elapsed));
