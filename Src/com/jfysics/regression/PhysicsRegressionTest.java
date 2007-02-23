@@ -15,8 +15,10 @@ public class PhysicsRegressionTest {
 		Line2d line1 = new Line2d(-4, 0, -2, 0);
 		Line2d line2 = new Line2d(4, 4, -2, -2);
 		System.out.println("Line one and two intersect at: " + line1.getIntersection(line2));
-		view.assertTest(line1.getIntersection(line2).getX() == 0, "Line Intersection (x)");
-		view.assertTest(line1.getIntersection(line2).getY() == 0, "Line Intersection (y)");
+		view.assertTest(line1.getIntersection(line2).getX() == 0, "Line Intersection (x)1");
+		view.assertTest(line2.getIntersection(line1).getX() == 0, "Line Intersection (x)2");
+		view.assertTest(line1.getIntersection(line2).getY() == 0, "Line Intersection (y)1");
+		view.assertTest(line2.getIntersection(line1).getY() == 0, "Line Intersection (y)2");
 		
 		BoundingBox b1 = new BoundingBox(new Vector2d(0,0), new Vector2d(5,5));
 		BoundingBox b2 = new BoundingBox(new Vector2d(2,2), new Vector2d(7,10));
@@ -28,5 +30,10 @@ public class PhysicsRegressionTest {
 		
 		view.assertTest(!b1.collides(b2), "BoundingBox no-collide 1");
 		view.assertTest(!b2.collides(b1), "BoundingBox no-collide 2");
+		
+		b2 = new BoundingBox(new Vector2d(-2,-2), new Vector2d(7,7));
+		
+		view.assertTest(b1.collides(b2), "BoundingBox inside-test 1");
+		view.assertTest(b2.collides(b1), "BoundingBox inside-test 2");
 	}
 }

@@ -8,4 +8,14 @@ public class BallObject extends RigidBodyObject{
 		super(pos);
 		radius = rad;
 	}
+	@Override
+	public BoundingBox getBounds() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	@Override
+	public void updateGeometry() {
+		// TODO Auto-generated method stub
+		
+	}
 }

@@ -38,4 +38,16 @@ public class Vector2d {
 	public String toString(){
 		return "(" + x + ", " + y + ")";
 	}
+	public void multX(int i) {
+		x *= i;
+	}
+	
+	public void multY(int i) {
+		y *= i;
+	}
+	
+	public Vector2d clone()
+	{
+		return new Vector2d(this.x, this.y);
+	}
 }
