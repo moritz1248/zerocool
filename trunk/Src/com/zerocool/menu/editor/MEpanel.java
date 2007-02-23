@@ -1,6 +1,5 @@
 package com.zerocool.menu.editor;
 
-import com.zerocool.menu.*;
 import javax.swing.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -9,7 +8,6 @@ import java.awt.event.WindowEvent;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridLayout;
-import java.io.File;
 
 public class MEpanel extends JTabbedPane implements ActionListener, WindowListener
 {
@@ -21,7 +19,6 @@ public class MEpanel extends JTabbedPane implements ActionListener, WindowListen
 	private JMenu file, edit, properties, help;
 	private JMenuItem exitMI, closeTabMI, newPageMI, newVisualMI, saveCurMI, 
 		saveAllMI, loadPageMI, loadVisualMI;//...
-	private File lastAccessed;
 	
 	public MEpanel(JFrame frame)
 	{
@@ -90,6 +87,28 @@ public class MEpanel extends JTabbedPane implements ActionListener, WindowListen
 		add("Welcome", start);
 	}
 	
+	public void setEditMenu(JMenuItem[] items)
+	{
+		//first delete all old items
+		edit.removeAll();
+		//add these items
+		for(int c = 0; c < items.length; c++)
+		{
+			edit.add(items[c]);
+		}
+	}
+	
+	public void setPropMenu(JMenuItem[] items)
+	{
+		//first delete all old items
+		properties.removeAll();
+		//add these items
+		for(int c = 0; c < items.length; c++)
+		{
+			properties.add(items[c]);
+		}
+	}
+	
 	public void actionPerformed(ActionEvent e)
 	{
 		if(e.getSource() == exitMI)
@@ -103,11 +122,15 @@ public class MEpanel extends JTabbedPane implements ActionListener, WindowListen
 		}
 		else if(e.getSource() == newPageButt || e.getSource() == newPageMI)
 		{
-			setSelectedComponent(add("Page", new MEpagePanel(lastAccessed)));
+			MEpagePanel mepp = new MEpagePanel(this);
+			setSelectedComponent(add("Page", mepp));
+			addChangeListener(mepp);
 		}
 		else if(e.getSource() == newVisualButt || e.getSource() == newVisualMI)
 		{
-			setSelectedComponent(add("Visual", new MEvisualPanel(lastAccessed)));
+			MEvisualPanel mevp = new MEvisualPanel(this);
+			setSelectedComponent(add("Visual", mevp));
+			addChangeListener(mevp);
 		}
 		else if(e.getSource() == saveCurMI)
 		{
@@ -161,15 +184,17 @@ public class MEpanel extends JTabbedPane implements ActionListener, WindowListen
 	
 	private void loadPage()
 	{
-		MEpagePanel mepp = new MEpagePanel(lastAccessed);
+		MEpagePanel mepp = new MEpagePanel(this);
 		mepp.load(false);
 		setSelectedComponent(add("Page", mepp));
+		addChangeListener(mepp);
 	}
 	private void loadVisual()
 	{
-		MEvisualPanel mevp = new MEvisualPanel(lastAccessed);
+		MEvisualPanel mevp = new MEvisualPanel(this);
 		mevp.load(false);
 		setSelectedComponent(add("Visual", mevp));
+		addChangeListener(mevp);
 	}
 	
 	public void windowClosing(WindowEvent w)

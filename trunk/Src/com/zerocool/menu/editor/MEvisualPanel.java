@@ -5,26 +5,16 @@ import java.awt.Graphics;
 import java.awt.Color;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
-
-import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
+import javax.swing.*;
 import java.awt.event.MouseEvent;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-
-import javax.swing.event.MouseInputListener;
-
+import java.io.*;
+import javax.swing.event.*;
 import com.zerocool.editor.ZCfileFilter;
 import com.zerocool.menu.*;
 
-public class MEvisualPanel extends JPanel implements MouseInputListener
+public class MEvisualPanel extends JPanel implements MouseInputListener, ChangeListener
 {
+	private MEpanel parent;
 	private ZCvisual visual;
 	private BufferedImage screen;
 	private Graphics2D g2;
@@ -34,12 +24,26 @@ public class MEvisualPanel extends JPanel implements MouseInputListener
 	private ZCvisual.Step current;
 	private File lastAccessed;
 	
-	public MEvisualPanel(File lastAccessed)
+	public MEvisualPanel(MEpanel parent)
 	{
+		this.parent = parent;
 		visual = new ZCvisual();
 		addMouseListener(this);
 		addMouseMotionListener(this);
-		this.lastAccessed = lastAccessed;
+		lastAccessed = new File(ZCfileFilter.read("MenuEditor", "PagePath"));
+		
+		//add menu items to parent
+		parent.setEditMenu(new JMenuItem[]{});
+		parent.setPropMenu(new JMenuItem[]{});
+	}
+	
+	public void stateChanged(ChangeEvent e)
+	{
+		if(parent.getSelectedComponent() == this)
+		{
+			parent.setEditMenu(new JMenuItem[]{});
+			parent.setPropMenu(new JMenuItem[]{});
+		}
 	}
 	
 	public void paint(Graphics g)
