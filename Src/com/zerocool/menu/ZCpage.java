@@ -55,6 +55,16 @@ public class ZCpage implements Serializable, ActionListener
 		newComp.setPage(this);
 	}
 	
+	public void remove(int index)
+	{
+		components.remove(index);
+	}
+	//i don't know which remove function i'm going to use
+	public void remove(ZCcomponent comp)
+	{
+		components.remove(comp);
+	}
+	
 	public void mousifyAll(int x, int y, int type)
 	{
 		for(ZCcomponent c : components)

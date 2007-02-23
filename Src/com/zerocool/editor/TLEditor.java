@@ -70,7 +70,7 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 		
 		mouseState = 0;
 		
-		String file = read("FilePath=");
+		String file = ZCfileFilter.read("TLEditor", "FilePath");
 		if(file != null)
 			lastAccessed = new File(file);
 		else
@@ -303,7 +303,7 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 	}
 	public void clearLayer()
 	{
-		level.set(layer, new ArrayList());
+		level.set(layer, new ArrayList<GameObject>());
 		repaint();
 	}
 	public void renew()
@@ -311,8 +311,8 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 		layer = 0;
 		layerView.setLayer(layer);
 		layerLabel.setText("Layer: " + layer);
-		level = new ArrayList();
-		level.add(new ArrayList());
+		level = new ArrayList<ArrayList<GameObject>>();
+		level.add(new ArrayList<GameObject>());
 		int choice = JOptionPane.showConfirmDialog(this, "Do you want to border the level area?", "Watch for illegal immigrants", JOptionPane.YES_NO_OPTION);
 		if(choice == JOptionPane.YES_OPTION)
 		{
@@ -390,7 +390,7 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 			{
 				FileInputStream fileIS = new FileInputStream(file);
 				ObjectInputStream inStream = new ObjectInputStream(fileIS);
-				ArrayList newLevel = (ArrayList)inStream.readObject();
+				ArrayList<ArrayList<GameObject>> newLevel = (ArrayList<ArrayList<GameObject>>)inStream.readObject();
 				if(newLevel != null)
 					level = newLevel;
 			}
@@ -455,35 +455,7 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 		}
 		return false;
 	}
-	public String read(String var)
-	{
-		try
-		{
-			report("Directory: " + System.getProperty("user.dir"));
-			FileReader fr = new FileReader(System.getProperty("user.dir") + "/Apps/com/zerocool/editor/config.txt");
-			BufferedReader reader = new BufferedReader(fr);
-			report("Attempting to read first line.");
-			String nextLine;
-			for(nextLine = reader.readLine(); nextLine != null; nextLine = reader.readLine())
-				if(nextLine.startsWith(var))
-				{
-					if(nextLine.charAt(var.length()) == '*')
-						return System.getProperty("user.dir") + nextLine.substring(var.length() + 1, nextLine.length());
-					else
-						return nextLine.substring(var.length(), nextLine.length());
-				}
-		}
-		catch(FileNotFoundException e)
-		{
-			report("Exception caught: " + e.toString());
-		}
-		catch(IOException e)
-		{
-			report("Exception caught: " + e.toString());
-		}
-		return null;
-		
-	}
+	
 	public void changeLayer(boolean isUp)
 	{
 		if(isUp && layer + 1 < level.size())
@@ -622,7 +594,7 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 		helpText.setLineWrap(true);
 		helpText.setWrapStyleWord(true);
 		helpText.setEditable(false);
-		String helpPath = read("HelpPath=");
+		String helpPath = ZCfileFilter.read("TLEditor", "HelpPath");
 		try
 		{
 			FileReader fr = new FileReader(helpPath);
@@ -1203,7 +1175,7 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 			parent = tle;
 			
 			//by changing this you can change where the program looks to find the dynamic game object item types
-			String itemPath = parent.read("ItemPath=");
+			String itemPath = ZCfileFilter.read("TLEditor", "ItemPath");
 			if(itemPath != null)
 				path = new File(itemPath);
 			else

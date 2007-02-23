@@ -51,6 +51,10 @@ public class PageDriver extends JPanel implements MouseInputListener, KeyListene
 		if(pages != null && pages.size() > 0)
 		{
 			current = pages.get(0);
+			if(current == null)
+			{
+				current = new ZCpage(this);
+			}
 		}
 		else
 		{
@@ -79,41 +83,33 @@ public class PageDriver extends JPanel implements MouseInputListener, KeyListene
 	public ArrayList<ZCpage> loadPages()
 	{
 		ArrayList<ZCpage> pages = new ArrayList<ZCpage>();
-		pages.add(load(null));
+		pages.add(load(new File(ZCfileFilter.read("Menu", "MainPath"))));
 		return pages;
 	}
 	
 	public ZCpage load(File f)
 	{
 		ZCpage page = null;
-		JFileChooser chooser = new JFileChooser(f);
-		chooser.setFileFilter(new ZCfileFilter(".zcm"));
-		int choice = chooser.showOpenDialog(this);
-	    if(choice == JFileChooser.APPROVE_OPTION && chooser.getSelectedFile() != null)
-	    {
-	    	File file = chooser.getSelectedFile();
-			//this code opens the file
-			try
+		try
+		{
+			FileInputStream fileIS = new FileInputStream(f);
+			ObjectInputStream inStream = new ObjectInputStream(fileIS);
+			ZCpage newPage = (ZCpage)inStream.readObject();
+			if(newPage != null)
 			{
-				FileInputStream fileIS = new FileInputStream(file);
-				ObjectInputStream inStream = new ObjectInputStream(fileIS);
-				ZCpage newPage = (ZCpage)inStream.readObject();
-				if(newPage != null)
-				{
-					page = newPage;
-					page.setParent(this);
-				}
+				page = newPage;
+				page.setParent(this);
 			}
-			catch(IOException e)
-			{
-				System.out.println("IOException thrown while trying to open page " + file + ";  Exception caught");
-				System.out.println(e.toString());
-			}
-			catch(ClassNotFoundException e)
-			{
-				System.out.println("ClassNotFoundException thrown while trying to open page " + file + ";  Exception caught");
-			}
-	    }
+		}
+		catch(IOException e)
+		{
+			System.out.println("IOException thrown while trying to open page " + f + ";  Exception caught");
+			System.out.println(e.toString());
+		}
+		catch(ClassNotFoundException e)
+		{
+			System.out.println("ClassNotFoundException thrown while trying to open page " + f + ";  Exception caught");
+		}
 	    return page;
 	}
 	

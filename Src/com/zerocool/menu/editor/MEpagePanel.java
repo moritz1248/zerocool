@@ -1,19 +1,20 @@
 package com.zerocool.menu.editor;
 
-import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.event.MouseInputListener;
+import javax.swing.*;
+import javax.swing.event.*;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 import com.zerocool.editor.ZCfileFilter;
 import com.zerocool.menu.*;
 
-public class MEpagePanel extends JPanel implements MouseInputListener
+public class MEpagePanel extends JPanel implements MouseInputListener, ActionListener, ChangeListener
 {
+	private MEpanel parent;
 	private ZCpage page;
 	private BufferedImage screen;
 	private Graphics2D g2;
@@ -22,13 +23,43 @@ public class MEpagePanel extends JPanel implements MouseInputListener
 	private ZCcomponent current;
 	private int lastX, lastY;
 	private File lastAccessed;
+	private JPopupMenu popup;
+	private JMenuItem editPMI, deletePMI;
+	private JMenuItem addNew, adjustProp;
 	
-	public MEpagePanel(File lastAccessed)
+	public MEpagePanel(MEpanel parent)
 	{
+		this.parent = parent;
 		page = new ZCpage(this);
 		addMouseListener(this);
 		addMouseMotionListener(this);
-		this.lastAccessed = lastAccessed;
+		lastAccessed = new File(ZCfileFilter.read("MenuEditor", "PagePath"));
+		
+		//popup menu???
+		popup = new JPopupMenu();
+		editPMI = new JMenuItem("Edit");
+		editPMI.addActionListener(this);
+		deletePMI = new JMenuItem("Delete");
+		deletePMI.addActionListener(this);
+		popup.add(editPMI);
+		popup.add(deletePMI);
+		
+		//add menu items to parent
+		addNew = new JMenuItem("Add new component");
+		addNew.addActionListener(this);
+		adjustProp = new JMenuItem("Adjust Properties");
+		adjustProp.addActionListener(this);
+		parent.setEditMenu(new JMenuItem[]{addNew});
+		parent.setPropMenu(new JMenuItem[]{adjustProp});
+	}
+	
+	public void stateChanged(ChangeEvent e)
+	{
+		if(parent.getSelectedComponent() == this)
+		{
+			parent.setEditMenu(new JMenuItem[]{addNew});
+			parent.setPropMenu(new JMenuItem[]{adjustProp});
+		}
 	}
 	
 	public void paint(Graphics g)
@@ -130,27 +161,55 @@ public class MEpagePanel extends JPanel implements MouseInputListener
 		return false;
 	}
 	
+	public void actionPerformed(ActionEvent e)
+	{
+		if(e.getSource() == editPMI)
+		{
+			
+		}
+		else if(e.getSource() == deletePMI)
+		{
+			page.remove(current);
+			current = null;
+			repaint();
+		}
+	}
+	
 	public void mouseClicked(MouseEvent m)
 	{
-		boolean update = false;
-		for(ZCcomponent zcc : page.getComponents())
-		{
-			if(zcc.getShape().contains(m.getX(), m.getY()))
-			{
-				current = zcc;
-				update = true;
-			}
-			if(zcc.getShape().isCenterHit(m.getX(), m.getY()))
-			{
-				return;
-			}
-		}
-		if(!update)
-		{
-			current = null;
-		}
 		lastX = m.getX();
 		lastY = m.getY();
+		if(m.getButton() == MouseEvent.BUTTON1)
+		{
+			boolean update = false;
+			for(ZCcomponent zcc : page.getComponents())
+			{
+				if(zcc.getShape().contains(m.getX(), m.getY()))
+				{
+					current = zcc;
+					update = true;
+				}
+				if(zcc.getShape().isCenterHit(m.getX(), m.getY()))
+				{
+					return;
+				}
+			}
+			if(!update)
+			{
+				current = null;
+			}
+		}
+		else
+		{
+			for(ZCcomponent zcc : page.getComponents())
+			{
+				if(zcc.getShape().contains(m.getX(), m.getY()))
+				{
+					current = zcc;
+					popup.show(this, m.getX(), m.getY());
+				}
+			}
+		}
 		repaint();
 	}
 	public void mouseDragged(MouseEvent m)
