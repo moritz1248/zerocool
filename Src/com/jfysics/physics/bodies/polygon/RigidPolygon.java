@@ -10,6 +10,7 @@ import com.jfysics.physics.bodies.RigidBodyObject;
 
 public class RigidPolygon extends RigidBodyObject{
 	private ArrayList<Vector2d> vectors;
+	//private ArrayList<Line2d> lines;
 	public RigidPolygon(ArrayList<Vector2d> vecList){
 		super(new Vector2d());
 		vectors = vecList;
@@ -81,12 +82,15 @@ public class RigidPolygon extends RigidBodyObject{
 	public Vector2d checkCollide(RigidPolygon polygon) {
 		int poly1count = getPointCount();
 		int poly2count = polygon.getPointCount();
-		for(int i = 0; i <= poly1count-1; i++)
+		Line2d line1, line2;
+		for(int i = 0; i < poly1count; i++)
 		{
-			for(int j = 0; j <= poly2count-1; j++)
+			line1 = new Line2d(getVector(i), getVector(i+1));
+			for(int j = 0; j < poly2count; j++)
 			{
-				Vector2d intersect = new Line2d(polygon.getVector(j), polygon.getVector(j+1)).getIntersection(new Line2d(getVector(i), getVector(i+1)));
-				if(new Line2d(polygon.getVector(j), polygon.getVector(j+1)).isOnSegment(intersect, new Line2d(getVector(i), getVector(i+1))))
+				line2 = new Line2d(polygon.getVector(j), polygon.getVector(j+1));
+				Vector2d intersect = line2.getIntersection(line1);
+				if(line2.isOnSegment(intersect,line1))
 				{
 					return intersect;
 				}
