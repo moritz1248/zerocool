@@ -20,6 +20,7 @@ public class GameObject extends RenderableObject implements Serializable
 {
 	final int OBJECT_ID;
 	private int orientation;
+	private String texture_id; //Texture ID is denoted by the texture filename.
 
 	/**
 	 * public <code>GameObject</code> extends <code>Node</code> and is the upper level modifier
