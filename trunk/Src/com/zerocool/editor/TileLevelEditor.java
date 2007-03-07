@@ -13,6 +13,7 @@ public class TileLevelEditor
 	{
 		//don't like the title...too bad.  oh and it's trademarked
 		JFrame frame = new JFrame("TileLevelEditor v1.0 by Revention Software(tm) for Project Zero Cool");
+		frame.setResizable(false);
 		
 		//creates the panel then abandons it to its hopeless fate of frog shaped birth defects that children tease.  poor it.
 		TLEditor panel = new TLEditor();

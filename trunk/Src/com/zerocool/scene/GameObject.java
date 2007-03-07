@@ -20,7 +20,7 @@ public class GameObject extends RenderableObject implements Serializable
 {
 	final int OBJECT_ID;
 	private int orientation;
-	private String texture_id; //Texture ID is denoted by the texture filename.
+	private String textureId; //Texture ID is denoted by the texture filename.
 
 	/**
 	 * public <code>GameObject</code> extends <code>Node</code> and is the upper level modifier
@@ -38,6 +38,16 @@ public class GameObject extends RenderableObject implements Serializable
 		return OBJECT_ID;
 	}
 	
+	public String getTextureID()
+	{
+		return textureId;
+	}
+	
+	public void setTextureID(String textureName)
+	{
+		textureId = textureName;
+	}
+	
 	
 	public GameObject(int id, float pX, float pY, float pZ, int orient)
 	{
@@ -51,12 +61,15 @@ public class GameObject extends RenderableObject implements Serializable
 	public GameObject getClone(int id)
 	{
 		System.out.println("Cloning GameObject type: " + getType());
+		GameObject go;
 		if(getType() == -1)
-			return new DynamicGameObject(id, getX(), getY(), getZ(), orientation, null);
+			go = new DynamicGameObject(id, getX(), getY(), getZ(), orientation, null);
 		else if(getType() > 0)
-			return new TileObject(id, getType(), getX(), getY(), getZ(), orientation);
+			go = new TileObject(id, getType(), getX(), getY(), getZ(), orientation);
 		else
-			return new GameObject(id, getX(), getY(), getZ(), orientation);
+			go = new GameObject(id, getX(), getY(), getZ(), orientation);
+		go.setTextureID(textureId);
+		return go;
 	}
 	
 	public void convertTileInformation() {

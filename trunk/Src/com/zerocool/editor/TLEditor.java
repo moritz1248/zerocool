@@ -10,6 +10,7 @@ import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.io.*;
+import javax.imageio.ImageIO;
 
 //this edits the levels which consists of tiles...therein the name tileleveleditor.  cause its a level of tiles, a tilelevel...ohhhh
 public class TLEditor extends JPanel implements ActionListener, WindowListener
@@ -1151,13 +1152,13 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 		private GameObject before, after;
 		private TLEditor parent;
 		private JFrame frame;
-		private JPanel panel, rotate, options, left, right;
-		private JLabel orientL, imageL, rotateL, posnL, xL, yL, zL, typeL, fileL;
+		private JPanel panel, top, rotate, options, left, right, bottom;
+		private JLabel orientL, imageL, rotateL, posnL, xL, yL, zL, typeL, fileL, textureL;
 		private JButton rLeft, rRight, reset, keep;
-		private JComboBox typeCB, fileCB;
-		private boolean isTile;
-		private File path;
+		private JComboBox typeCB, fileCB, textureCB;
+		private File filePath, texturePath;
 		private File[] allFiles;
+		private File[] allTextures;
 		
 		//this is just to create a dummy class
 		private ObjectEditor()
@@ -1177,14 +1178,22 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 			//by changing this you can change where the program looks to find the dynamic game object item types
 			String itemPath = ZCfileFilter.read("TLEditor", "ItemPath");
 			if(itemPath != null)
-				path = new File(itemPath);
+				filePath = new File(itemPath);
 			else
-				path = new File("");
+				filePath = new File("");
+			
+			String txtrPath = ZCfileFilter.read("TLEditor", "TexturePath");
+			if(txtrPath != null)
+				texturePath = new File(txtrPath);
+			else
+				texturePath = new File("");
 			
 			//frame and panels
 			frame = new JFrame("GameObject Editor");
 			frame.addWindowListener(this);
+			top = new JPanel();
 			panel = new JPanel();
+			panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 			rotate = new JPanel();
 			rotate.setLayout(new BoxLayout(rotate, BoxLayout.X_AXIS));
 			left = new JPanel();
@@ -1193,6 +1202,8 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 			options.setLayout(new BoxLayout(options, BoxLayout.X_AXIS));
 			right = new JPanel();
 			right.setLayout(new BoxLayout(right, BoxLayout.Y_AXIS));
+			bottom = new JPanel();
+			bottom.setLayout(new BoxLayout(bottom, BoxLayout.Y_AXIS));
 			
 			//labels
 			orientL = new JLabel("Orientation: " + go.getOrientation());
@@ -1224,10 +1235,10 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 			typeCB.setSelectedIndex(index);
 			typeCB.addActionListener(this);
 			
-			allFiles = getFiles();
-			String[] allNames;
+			allFiles = filePath.listFiles(new CustomFNF(".zci"));
 			if(allFiles != null)
 			{
+				String[] allNames;
 				allNames = new String[allFiles.length];
 				for(int c = 0; c < allFiles.length; c++)
 					allNames[c] = getName(allFiles[c]);
@@ -1249,11 +1260,39 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 			}
 			else
 			{
-				allNames = null;
 				fileCB = new JComboBox();
-				if(go.getType() != -1)
-					fileCB.setVisible(false);
 			}
+			if(go.getType() != -1)
+			{
+				fileCB.setVisible(false);
+				fileL.setVisible(false);
+			}
+			
+			allTextures = texturePath.listFiles();
+			if(allTextures != null)
+			{
+				int selection = 0;
+				String[] allNames = new String[allTextures.length];
+				for(int c = 0; c < allTextures.length; c++)
+				{
+					allNames[c] = allTextures[c].getName();
+					if(allNames[c].equals(go.getTextureID()))
+					{
+						selection = c;
+					}
+				}
+				textureCB = new JComboBox(allNames);
+				textureCB.setSelectedIndex(selection);
+			}
+			else
+			{
+				textureCB = new JComboBox();
+			}
+			textureCB.addActionListener(this);
+			textureL = new JLabel();
+			textureL.setVerticalTextPosition(JLabel.TOP);
+			textureL.setHorizontalTextPosition(JLabel.CENTER);
+			formatTextureView();
 			
 			rotate.add(rotateL);
 			rotate.add(rLeft);
@@ -1275,22 +1314,18 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 			right.add(fileCB);
 			right.add(options);
 			
-			panel.add(left);
-			panel.add(right);
+			bottom.add(textureL);
+			bottom.add(textureCB);
+			
+			top.add(left);
+			top.add(right);
+			
+			panel.add(top);
+			panel.add(bottom);
 			
 			frame.getContentPane().add(panel);
 			frame.pack();
 			frame.setVisible(true);
-		}
-		
-		private File[] getFiles()
-		{
-			//add code to look in the specified folder (path) for any and all DynamicGameObject .zci files
-			File[] all = path.listFiles();
-			System.out.println("all files of parent dir " + path.toString() + " :: ");
-			for(File each : all)
-				System.out.println(each.toString());
-			return path.listFiles(new CustomFNF(".zci"));
 		}
 		
 		private String getName(File f)
@@ -1441,6 +1476,31 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 			return image;
 		}
 		
+		private void formatTextureView()
+		{
+			try
+			{
+				BufferedImage bi = ImageIO.read(allTextures[textureCB.getSelectedIndex()]);
+				Image img;
+				if(bi.getWidth() / 300.0 > bi.getHeight() / 200.0)
+				{
+					img = bi.getScaledInstance(300, -1, Image.SCALE_SMOOTH);
+				}
+				else
+				{
+					img = bi.getScaledInstance(-1, 200, Image.SCALE_SMOOTH);
+				}
+				textureL.setIcon(new ImageIcon(img));
+				textureL.setText((String)textureCB.getSelectedItem());
+				after.setTextureID((String)textureCB.getSelectedItem());
+			}
+			catch(Exception error)
+			{
+				textureL.setText("Could Not Display");
+				textureL.setIcon(new ImageIcon(new BufferedImage(300, 200, BufferedImage.TYPE_BYTE_BINARY)));
+			}
+		}
+		
 		public void actionPerformed(ActionEvent e)
 		{
 			if(e.getSource() == rLeft)
@@ -1486,9 +1546,14 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 			{
 				((DynamicGameObject)after).setFile(allFiles[fileCB.getSelectedIndex()]);
 			}
+			else if(e.getSource() == textureCB)
+			{
+				formatTextureView();
+				frame.pack();
+			}
 			else if(e.getSource() == reset)
 			{
-				after = before;
+				after = before.getClone(nextId());
 				int index = before.getType() - 1;
 				if(index < 0)
 				{
@@ -1502,6 +1567,18 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 					fileCB.setVisible(false);
 				}
 				typeCB.setSelectedIndex(index);
+				orientL.setText("Orientation: " + before.getOrientation());
+				int selection = 0;
+				for(int c = 0; c < allTextures.length; c++)
+				{
+					if(allTextures[c].getName().equals(before.getTextureID()))
+					{
+						selection = c;
+						break;
+					}
+				}
+				textureCB.setSelectedIndex(selection);
+				formatTextureView();
 			}
 			else if(e.getSource() == keep)
 			{
