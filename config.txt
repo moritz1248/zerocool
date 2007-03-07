@@ -1,0 +1,15 @@
+TLEditor::
+>FilePath=*\Data\levels
+>ItemPath=*\Data\items
+>TexturePath=*\Data\textures
+>HelpPath=*\Apps\com\zerocool\editor\help.txt
+<<
+
+MenuEditor::
+>PagePath=*\Data\menu
+>VisualPath=*\Data\menu
+<<
+
+Menu::
+>MainPath=*\Data\menu\main.zcm
+<<
