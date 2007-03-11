@@ -3,6 +3,7 @@ package com.zerocool.scene.level;
 import com.jme.math.Vector3f;
 import com.jme.scene.shape.Box;
 import com.zerocool.scene.GameObject;
+import java.util.Scanner;
 
 /**
  * <code>TileObject</code> extends <code>GameObject</code>. It is the shell class for every Tile loaded
@@ -60,4 +61,15 @@ public class TileObject extends GameObject
 	 */
 	public void setType(int type){this.type = type;}
 	
+	public String toText(char delimiter)
+	{
+		return "TileObject" + delimiter + getID() + delimiter + type + delimiter + attribute + delimiter + super.toText(delimiter);
+	}
+	
+	public void toObject(Scanner scan)
+	{
+		type = scan.nextInt();
+		attribute = scan.nextInt();
+		super.toObject(scan);
+	}
 }

@@ -6,6 +6,7 @@ import com.jme.scene.shape.Box;
 import com.zerocool.model.ModelLoader;
 import com.zerocool.scene.level.TileObject;
 import java.io.Serializable;
+import java.util.Scanner;
 
 /**
  * <code>GameObject</code> Is the overhead for all objects within the application, static or dynamic. 
@@ -32,8 +33,33 @@ public class GameObject extends RenderableObject implements Serializable
 		OBJECT_ID = id;
 		orientation = 1;
 	}
+	public GameObject(int id, float pX, float pY, float pZ, int orient)
+	{
+		OBJECT_ID = id;
+		setX(pX);
+		setY(pY);
+		setZ(pZ);
+		orientation = orient;
+	}
 	
-	protected int getID() {
+	public String toText(char delimiter)
+	{
+		//OBJECT_ID is not displayed here
+		return "" + orientation + delimiter + getX() + delimiter + getY() + delimiter + getZ() + delimiter + textureId + delimiter;
+	}
+	
+	public void toObject(Scanner scan)
+	{
+		//OBJECT_ID is not handled here
+		orientation = scan.nextInt();
+		setX(scan.nextFloat());
+		setY(scan.nextFloat());
+		setZ(scan.nextFloat());
+		textureId = scan.next().trim();
+	}
+	
+	protected int getID() 
+	{
 		// TODO Auto-generated method stub
 		return OBJECT_ID;
 	}
@@ -49,15 +75,6 @@ public class GameObject extends RenderableObject implements Serializable
 	}
 	
 	
-	public GameObject(int id, float pX, float pY, float pZ, int orient)
-	{
-		OBJECT_ID = id;
-		setX(pX);
-		setY(pY);
-		setZ(pZ);
-		orientation = orient;
-	}
-	
 	public GameObject getClone(int id)
 	{
 		System.out.println("Cloning GameObject type: " + getType());
@@ -72,7 +89,8 @@ public class GameObject extends RenderableObject implements Serializable
 		return go;
 	}
 	
-	public void convertTileInformation() {
+	public void convertTileInformation() 
+	{
 		setX(getX()* 10);
 		setY(getY() * 10);
 		setZ(getZ() * 10);
@@ -93,7 +111,8 @@ public class GameObject extends RenderableObject implements Serializable
 
 
 	@Override
-	public void Update(int elapsed) {
+	public void Update(int elapsed) 
+	{
 		// TODO Auto-generated method stub
 		
 	}

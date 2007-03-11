@@ -11,6 +11,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.io.*;
 import javax.imageio.ImageIO;
+import java.util.Scanner;
 
 //this edits the levels which consists of tiles...therein the name tileleveleditor.  cause its a level of tiles, a tilelevel...ohhhh
 public class TLEditor extends JPanel implements ActionListener, WindowListener
@@ -19,7 +20,7 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 	private JMenuBar menuBar;
 	private JMenu fileMenu, layerMenu, tileMenu, toolMenu, helpMenu;
 	//MI stands for menu item...or maybe my intelligence
-	private JMenuItem newMI, openMI, saveMI, exitMI, layerUpMI, layerDownMI, addLayerMI, clearLayerMI, syncronizeMI, addTileMI, editTileMI, deleteTileMI, addBorderMI, addWallMI, addBlockMI, helpMI, aboutMI, editPUMI, deletePUMI;
+	private JMenuItem newMI, openMI, saveMI, saveAsMI, exportMI, importMI, exitMI, layerUpMI, layerDownMI, addLayerMI, clearLayerMI, syncronizeMI, addTileMI, editTileMI, deleteTileMI, addBorderMI, addWallMI, addBlockMI, helpMI, aboutMI, editPUMI, deletePUMI;
 	//attempting to add a popup menu
 	private JPopupMenu popMenu;
 	//these are the two views of the current level:
@@ -40,6 +41,8 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 	private GameObject selected;
 	//this is the current level
 	private ArrayList<ArrayList<GameObject>> level;
+	//these are the user defined groups
+	private ArrayList<ArrayList<GameObject>> groups;
 	//this var determines whether everything will be printed or not
 	private boolean reportOn;
 	//this determines the next id to be used
@@ -54,6 +57,10 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 	private File lastAccessed;
 	//this remembers the starting location of the wall/block
 	private int xStart, zStart;
+	//remember the relative path of this file
+	private String levelFile;
+	//later add support so that it knows whether you have edited something since the last save
+	private boolean edited = false;
 	
 	//ALL HAIL THE EDITOR!!!
 	public TLEditor()
@@ -77,6 +84,8 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 		else
 			lastAccessed = new File(System.getProperty("user.dir"));
 		
+		groups = new ArrayList<ArrayList<GameObject>>();
+
 		level = new ArrayList<ArrayList<GameObject>>();
 		//this initaties the first layer; layer 0
 		level.add(new ArrayList<GameObject>());
@@ -149,6 +158,12 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 		openMI.addActionListener(this);
 		saveMI = new JMenuItem("Save");
 		saveMI.addActionListener(this);
+		saveAsMI = new JMenuItem("Save As...");
+		saveAsMI.addActionListener(this);
+		importMI = new JMenuItem("Import");
+		importMI.addActionListener(this);
+		exportMI = new JMenuItem("Export");
+		exportMI.addActionListener(this);
 		exitMI = new JMenuItem("Exit");
 		exitMI.addActionListener(this);
 		layerUpMI = new JMenuItem("Up");
@@ -182,6 +197,10 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 		fileMenu.addSeparator();
 		fileMenu.add(openMI);
 		fileMenu.add(saveMI);
+		fileMenu.add(saveAsMI);
+		fileMenu.addSeparator();
+		fileMenu.add(importMI);
+		fileMenu.add(exportMI);
 		fileMenu.addSeparator();
 		fileMenu.add(exitMI);
 		layerMenu.add(layerUpMI);
@@ -219,10 +238,25 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 			report("User choose to open a saved level");
 			open();
 		}
+		else if(source == saveAsMI)
+		{
+			report("User choose to save the current level");
+			saveAs();
+		}
 		else if(source == saveMI)
 		{
 			report("User choose to save the current level");
-			saved();
+			save();
+		}
+		else if(source == importMI)
+		{
+			report("User choose to import a raw level");
+			importLevel();
+		}
+		else if(source == exportMI)
+		{
+			report("User choose to export to raw rext");
+			exportLevel();
 		}
 		else if(source == exitMI)
 		{
@@ -249,9 +283,9 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 			if(source == syncronizeMI)
 				syncronize.setSelected(!syncronize.isSelected());
 			if(syncronize.isSelected())
-				report("User choose to syncronize views");
+				report("User choose to enable syncronized view");
 			else
-				report("User choose to allow free view");
+				report("User choose to enable free view");
 			compositeView.syncronize();
 		}
 		else if(source == clearLayerMI)
@@ -374,11 +408,116 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 	{
 		return nextID++;
 	}
+	public void importLevel()
+	{
+		int choice = JOptionPane.showConfirmDialog(this, "Do you want to save the current level first?", "Save?", JOptionPane.YES_NO_OPTION);
+		if(choice == JOptionPane.YES_OPTION)
+			save();
+		JFileChooser chooser = new JFileChooser(lastAccessed);
+		chooser.setFileFilter(new ZCfileFilter(".txt"));
+		choice = chooser.showOpenDialog(this);
+	    if(choice == JFileChooser.APPROVE_OPTION && chooser.getSelectedFile() != null)
+	    {
+	    	Scanner mainScanner;
+			try
+			{
+				mainScanner = new Scanner(chooser.getSelectedFile());
+		    }
+			catch(FileNotFoundException e)
+		    {
+				JOptionPane.showMessageDialog(this, "Import failed", "Import failed", JOptionPane.ERROR_MESSAGE);
+				return;
+		    }
+			//the version line
+			mainScanner.nextLine();
+			//the "Layers: " token
+			mainScanner.next();
+			int layers = mainScanner.nextInt();
+			level = new ArrayList<ArrayList<GameObject>>();
+			for(int c = 0; c < layers; c++)
+			{
+				level.add(new ArrayList<GameObject>());
+			}
+			while(mainScanner.hasNextLine())
+			{
+				GameObject go = null;
+				try
+				{
+					Scanner input = new Scanner(mainScanner.nextLine() + "\t").useDelimiter("\t");
+					String objType = input.next();
+					int id = input.nextInt();
+					if(objType.equals("TileObject"))
+					{
+						go = new TileObject(id);
+						go.toObject(input);
+					}
+					else if(objType.equals("DynamicGameObject"))
+					{
+						go = new DynamicGameObject(id, null);
+						go.toObject(input);
+					}
+					if(go != null)
+					{
+						int goLayer = (new Float(go.getY())).intValue();
+						level.get(goLayer).add(go);
+					}
+				}
+				catch(Exception e)
+				{
+					System.out.println("Exception thrown during import " + e + " trying to create " + go);
+				}
+			}
+		    selected = null;
+		    layer = 0;
+			layerView.setLayer(layer);
+			layerLabel.setText("Layer: " + layer);
+			layerView.setCorner(0,0);
+			compositeView.setCorner(0,0);
+		    repaint();
+	    }
+	}
+	public void exportLevel()
+	{
+		if(levelFile == null)
+		{
+			int choice = JOptionPane.showConfirmDialog(this, "Please save this file first...", "Save?", JOptionPane.OK_CANCEL_OPTION);
+			if(!(choice == JOptionPane.OK_OPTION && saveAs()))
+			{
+				JOptionPane.showMessageDialog(this, "Export failed, please save first", "Export failed", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+		}
+		else
+		{
+			save();
+		}
+		String fileName = levelFile.substring(0, levelFile.length() - 4) + ".txt";
+		try
+		{
+			System.out.println(fileName);
+			BufferedWriter writer = new BufferedWriter(new FileWriter(fileName));
+			writer.write("Version: 1.0" + '\n');
+			writer.write("Layers: " + level.size() + '\n');
+			for(ArrayList<GameObject> layer : level)
+				for(GameObject go : layer)
+				{
+					writer.write(go.toText('\t') + '\n');
+					System.out.println(go.toText('\t'));
+				}
+			writer.close();
+		}
+		catch(Exception e)
+		{
+			System.out.println("Exception thrown in trying to write products to " + "file " + fileName);
+			JOptionPane.showMessageDialog(this, "Export failed, an exception was thrown", "Export failed", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+	}
 	public void open()
 	{
 		int choice = JOptionPane.showConfirmDialog(this, "Do you want to save the current level first?", "Save?", JOptionPane.YES_NO_OPTION);
 		if(choice == JOptionPane.YES_OPTION)
-			saved();
+			save();
 		JFileChooser chooser = new JFileChooser(lastAccessed);
 		chooser.setFileFilter(new ZCfileFilter(".zcl"));
 		choice = chooser.showOpenDialog(this);
@@ -394,6 +533,7 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 				ArrayList<ArrayList<GameObject>> newLevel = (ArrayList<ArrayList<GameObject>>)inStream.readObject();
 				if(newLevel != null)
 					level = newLevel;
+				levelFile = file.getPath();
 			}
 			catch(IOException e)
 			{
@@ -413,7 +553,37 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 		compositeView.setCorner(0,0);
 	    repaint();
 	}
-	public boolean saved()
+	public boolean save()
+	{
+		if(levelFile == null)
+		{
+			return saveAs();
+		}
+		File file = new File(levelFile);
+		report("Attempting to save as " + file);
+		lastAccessed = file;
+		//this code saves the file
+		try
+		{
+			FileOutputStream fileOS = new FileOutputStream(file);
+			ObjectOutputStream outStream = new ObjectOutputStream (fileOS);
+			outStream.writeObject(level);
+		}
+		catch(FileNotFoundException e)
+		{
+			report("FileNotFoundException thrown while trying to save level as " + file + ".zcl;  Exception caught");
+			return saveAs();
+		}
+		catch(IOException e)
+		{
+			report("IOException thrown while trying to save level as " + file + ".zcl;  Exception caught");
+			report(e.toString());
+			return saveAs();
+		}
+		return true;
+	}
+	
+	public boolean saveAs()
 	{
 		JFileChooser chooser = new JFileChooser(lastAccessed);
 		chooser.setFileFilter(new ZCfileFilter(".zcl"));
@@ -440,6 +610,7 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 				FileOutputStream fileOS = new FileOutputStream(file);
 				ObjectOutputStream outStream = new ObjectOutputStream (fileOS);
 				outStream.writeObject(level);
+				levelFile = path;
 			}
 			catch(FileNotFoundException e)
 			{
@@ -479,7 +650,7 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 	}
 	public void addLayer()
 	{
-		level.add(new ArrayList());
+		level.add(new ArrayList<GameObject>());
 		selected = null;
 		layer = level.size() - 1;
 		layerView.setLayer(layer);
@@ -794,7 +965,7 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 		int choice = JOptionPane.showConfirmDialog(this, "Do you want to save before closing?", "10 seconds until self destruct, 9, 8...", JOptionPane.YES_NO_OPTION); 
 		if(choice == JOptionPane.YES_OPTION)
 		{
-			if(saved())
+			if(save())
 				System.exit(0);
 		}
 		else
@@ -1281,12 +1452,16 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 						selection = c;
 					}
 				}
+				if(allNames.length == 0)
+				{
+					allNames = new String[]{""};
+				}
 				textureCB = new JComboBox(allNames);
 				textureCB.setSelectedIndex(selection);
 			}
 			else
 			{
-				textureCB = new JComboBox();
+				textureCB = new JComboBox(new String[]{""});
 			}
 			textureCB.addActionListener(this);
 			textureL = new JLabel();

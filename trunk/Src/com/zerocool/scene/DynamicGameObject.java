@@ -11,6 +11,7 @@
 package com.zerocool.scene;
 
 import java.io.File;
+import java.util.Scanner;
 
 import org.keplerproject.luajava.LuaState;
 
@@ -52,6 +53,17 @@ public class DynamicGameObject extends GameObject
 	public void setFile(File f)
 	{
 		file = f;
+	}
+	
+	public String toText(char delimiter)
+	{
+		return "DynamicGameObject" + delimiter + getID() + delimiter + file.getName() + delimiter + super.toText(delimiter);
+	}
+	
+	public void toObject(Scanner scan)
+	{
+		file = new File(scan.next());
+		super.toObject(scan);
 	}
 	
 	/**
