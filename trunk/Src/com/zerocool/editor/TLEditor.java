@@ -37,8 +37,10 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 	private JLabel layerLabel, xPosnLabel, zPosnLabel;
 	//the number of the current layer
 	private int layer;
-	//the current selected Object in this layer
-	private GameObject selected;
+	//the current selected Objects in this layer
+	private ArrayList<GameObject> selected;
+	//the size of the selection
+	private Dimension selectionBox;
 	//this is the current level
 	private ArrayList<ArrayList<GameObject>> level;
 	//these are the user defined groups
@@ -61,6 +63,10 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 	private String levelFile;
 	//later add support so that it knows whether you have edited something since the last save
 	private boolean edited = false;
+	//to differentiate between selecting and moving
+	private boolean isSelecting;
+	//for selection
+	private int cX, cZ;
 	
 	//ALL HAIL THE EDITOR!!!
 	public TLEditor()
@@ -71,6 +77,8 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 		objEdit = new ObjectEditor();
 		
 		isDragging = false;
+		
+		isSelecting = false;
 		
 		xStart = zStart = -1;
 		
@@ -153,10 +161,13 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 		helpMenu = new JMenu("Help");
 		
 		newMI = new JMenuItem("New");
+		newMI.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, ActionEvent.CTRL_MASK));
 		newMI.addActionListener(this);
 		openMI = new JMenuItem("Open");
+		openMI.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK));
 		openMI.addActionListener(this);
 		saveMI = new JMenuItem("Save");
+		saveMI.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK));
 		saveMI.addActionListener(this);
 		saveAsMI = new JMenuItem("Save As...");
 		saveAsMI.addActionListener(this);
@@ -167,28 +178,39 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 		exitMI = new JMenuItem("Exit");
 		exitMI.addActionListener(this);
 		layerUpMI = new JMenuItem("Up");
+		layerUpMI.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_UP, ActionEvent.CTRL_MASK));
 		layerUpMI.addActionListener(this);
 		layerDownMI = new JMenuItem("Down");
+		layerDownMI.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, ActionEvent.CTRL_MASK));
 		layerDownMI.addActionListener(this);
 		addLayerMI = new JMenuItem("Add");
+		addLayerMI.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_L, ActionEvent.CTRL_MASK));
 		addLayerMI.addActionListener(this);
 		clearLayerMI = new JMenuItem("Clear");
 		clearLayerMI.addActionListener(this);
 		syncronizeMI = new JMenuItem("Syncronize Views");
+		syncronizeMI.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_K, ActionEvent.CTRL_MASK));
 		syncronizeMI.addActionListener(this);
 		addTileMI = new JMenuItem("Add");
+		addTileMI.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, ActionEvent.CTRL_MASK));
 		addTileMI.addActionListener(this);
 		editTileMI = new JMenuItem("Edit");
+		editTileMI.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, ActionEvent.CTRL_MASK));
 		editTileMI.addActionListener(this);
 		deleteTileMI = new JMenuItem("Delete");
+		deleteTileMI.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0));
 		deleteTileMI.addActionListener(this);
 		addBorderMI = new JMenuItem("Add Border");
+		addBorderMI.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, ActionEvent.CTRL_MASK));
 		addBorderMI.addActionListener(this);
 		addWallMI = new JMenuItem("Add Wall");
+		addWallMI.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, ActionEvent.CTRL_MASK));
 		addWallMI.addActionListener(this);
 		addBlockMI = new JMenuItem("Add Block");
+		addBlockMI.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_B, ActionEvent.CTRL_MASK));
 		addBlockMI.addActionListener(this);
 		helpMI = new JMenuItem("Help");
+		helpMI.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0));
 		helpMI.addActionListener(this);
 		aboutMI = new JMenuItem("About");
 		aboutMI.addActionListener(this);
@@ -301,7 +323,7 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 		else if(source == editTileMI || source == editPUMI)
 		{
 			report("User choose to edit the selected tile");
-			editTile();
+			//editTile();
 		}
 		else if(source == deleteTileMI || source == deletePUMI)
 		{
@@ -735,23 +757,28 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 					lyr.add(new TileObject(nextId(),1,x+a,layer,z-b,1)); 
 		repaint();
 	}
-	public void editTile()
+	public void editTile(int x, int z)
 	{
 		//opens a editor box
 		if(!objEdit.isOpen() && selected != null)
 		{
-			objEdit = new ObjectEditor(selected, this);
+			objEdit = new ObjectEditor(objectAt(x, z), this);
 		}
 	}
 	public void deleteTile()
 	{
 		if(selected != null)
 		{
-			int num = level.size();
-			if(level.get(layer).remove(selected) && level.size() + 1 == num)
-				report("Tile deleted successfully");
-			else
-				report("Error in tile deletion");
+			ArrayList<GameObject> thisLayer = level.get(layer);
+			int num = thisLayer.size();
+			for(GameObject go : selected)
+			{
+				if(thisLayer.remove(go) && thisLayer.size() + 1 == num)
+					report("Tile deleted successfully");
+				else
+					report("Error in tile deletion");
+				num = thisLayer.size();
+			}
 			selected = null;
 			repaint();
 		}
@@ -791,7 +818,8 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 	{
 		//add code to display info about the editor
 		JFrame frame = new JFrame("About");
-		frame.setPreferredSize(new Dimension(200, 110));
+		frame.setSize(new Dimension(200, 110));
+		frame.setResizable(false);
 		String text = "Tile Level Editor";
 		text += "\nVersion: 1.0";
 		text += "\nAuthor: Jonathan Sanford";
@@ -802,42 +830,76 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 		frame.pack();
 		frame.setVisible(true);
 	}
+	
 	public boolean canDragObject(int x, int z, int button)
 	{
 		if(!objEdit.isOpen())
-			if(mouseState == 2 || mouseState == 3)
+		{
+			System.out.println(selectionBox + " >>> " + mouseState + " >>> " + isSelecting);
+			if(mouseState == 2 || mouseState == 3 || isSelecting)
 			{
 				if(xStart == -1)
 				{
 					xStart = x;
 					zStart = z;
 				}
+				else
+				{
+					int dx = Math.abs(x - xStart) + 1;
+					int dz = Math.abs(z - zStart) + 1;
+					if(x < xStart)
+						cX = x;
+					else
+						cX = xStart;
+					if(z > zStart)
+						cZ = z;
+					else
+						cZ = zStart;
+					selectionBox = new Dimension(dx, dz);
+				}
 				return true;
 			}
 			else if(isDragging)
 			{
-				//move object
-				if(objectAt(x,z) == null && selected != null)
+				//first check to see if the spot is open
+				boolean flag = true;
+				for(GameObject go : selected)
 				{
-					selected.setX(x);
-					selected.setZ(z);
-					repaint();
+					GameObject other = objectAt((int)go.getX() - xStart + x, (int)go.getZ() - zStart + z);
+					if(other != null && !selected.contains(other))
+					{
+						flag = false;
+						break;
+					}
 				}
-				return true;
-			}
-			else if(objectAt(x,z) != null && selected == objectAt(x,z))
-			{
-				isDragging = true;
+				if(flag)
+				{
+					for(GameObject go : selected)
+					{
+						go.setX(go.getX() - xStart + x);
+						go.setZ(go.getZ() - zStart + z);
+					}
+					xStart = x;
+					zStart = z;
+				}
 				return true;
 			}
 			else if(objectAt(x,z) != null)
 			{
-				selected = objectAt(x,z);
+				if(selected == null || !selected.contains(objectAt(x,z)))
+				{
+					selected = new ArrayList<GameObject>();
+					selected.add(objectAt(x,z));
+					selectionBox = new Dimension(1,1);
+				}
 				isDragging = true;
+				xStart = x;
+				zStart = z;
 				return true;
 			}
 			else
 				return false;
+		}
 		else
 			return true;
 	}
@@ -849,35 +911,71 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 			createTiles(x, z, mouseState);
 			mouseState = 0;
 		}
+		if(isSelecting)
+		{
+			System.out.println("Selecting from range " + cX + "-" + cZ + " to " + (cX + selectionBox.width) + "-" + (cZ + selectionBox.height));
+			selected = new ArrayList<GameObject>();
+			for(int i = 0; i < selectionBox.width; i++)
+				for(int j = 0; j < selectionBox.height; j++)
+				{
+					System.out.println("Checking: " + (cX + i) + "-" + (cZ - j));
+					GameObject go = objectAt(cX + i, cZ - j);
+					if(go != null)
+					{
+						selected.add(go);
+						System.out.println("adding one more to the selection");
+					}
+				}
+			isSelecting = false;
+		}
 		xStart = zStart = -1;
+		cX = cZ = -1;
 	}
 	public void mouseClicked(int x, int z, int button)
 	{
 		if(objEdit.isOpen())
 			mouseState = -1;
-		if(mouseState == 1 && objectAt(x,z) == null)
+		GameObject go = objectAt(x,z);
+		if(mouseState == 1 && go == null)
 		{
 			//add tile
 			TileObject tile = new TileObject(nextId(), 1, x, layer, z, 1);
 			level.get(layer).add(tile);
-			selected = tile;
-			editTile();
+			selected = new ArrayList<GameObject>();
+			selected.add(tile);
+			xStart = x;
+			zStart = z;
+			selectionBox = new Dimension(1,1);
+			editTile(x, z);
 		}
-		else if(mouseState == 0)
+		else if(mouseState == 0 && go != null)
 		{
-			if(objectAt(x,z) != selected)
-				selected = objectAt(x,z);
+			if(!selected.contains(go))
+			{
+				selected = new ArrayList<GameObject>();
+				selected.add(go);
+				xStart = x;
+				zStart = z;
+				selectionBox = new Dimension(1,1);
+			}
 			else if(button == 1 && selected != null)
 			{
-				int orient = selected.getOrientation() + 1;
+				int orient = go.getOrientation() + 1;
 				if(orient > 4)
 					orient = 1;
-				selected.setOrientation(orient);
+				go.setOrientation(orient);
 			}
 			else if(button == 3 && selected != null)
 			{
 				popMenu.show(this, x * 25 + 25, 500 - (z * 25));
 			}
+		}
+		else
+		{
+			selected = null;
+			xStart = -1;
+			zStart = -1;
+			selectionBox = null;
 		}
 		repaint();
 		mouseState = 0;
@@ -947,11 +1045,12 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 				return go;
 		return null;
 	}
-	public void edited(GameObject newGO)
+	public void edited(GameObject old, GameObject newGO)
 	{
-		ArrayList lyr = level.get(layer);
-		lyr.set(lyr.indexOf(selected), newGO);
-		selected = newGO;
+		ArrayList<GameObject> lyr = level.get(layer);
+		lyr.set(lyr.indexOf(old), newGO);
+		selected.remove(old);
+		selected.add(newGO);
 		report("Changes have been recorded");
 		repaint();
 	}
@@ -1033,6 +1132,11 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 			xCorner = x;
 			zCorner = z;
 		}
+		public void moveCorner(int dx, int dz)
+		{
+			xCorner += dx;
+			zCorner += dz;
+		}
 		public void reset()
 		{
 			xA = zA = dX = dZ = -1;
@@ -1063,7 +1167,7 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 				}
 			}
 			parent.updateMouse(x + xCorner, z + zCorner);
-			repaint();
+			parent.repaint();
 		}
 		public void mouseClicked(MouseEvent m)
 		{
@@ -1084,6 +1188,18 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 			int x = (m.getX() / 25) + xCorner;
 			int z = ((500 - m.getY()) / 25) + zCorner;
 			parent.updateMouse(x, z);
+		}
+		public void mousePressed(MouseEvent m)
+		{
+			if(mouseState == 0 && (m.getButton() == MouseEvent.BUTTON2 || m.getButton() == MouseEvent.BUTTON3))
+			{
+				isSelecting = true;
+				xStart = (m.getX() / 25) + xCorner;
+				zStart = ((500 - m.getY()) / 25) + zCorner;
+				cX = xStart;
+				cZ = zStart;
+				selectionBox = new Dimension(1,1);
+			}
 		}
 		public void draw(int x, int z, int l, int h, boolean drawBrother)
 		{
@@ -1107,11 +1223,23 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 			if(selected != null)
 			{
 				g.setColor(Color.orange);
-				g.fillRect(((int)selected.getX() - xCorner) * 25, 500 - (((int)selected.getZ() - zCorner + 1) * 25), 25, 25);
+				for(GameObject go : selected)
+				{
+					if(go != null)
+					{
+						g.fillRect(((int)go.getX() - xCorner) * 25, 500 - (((int)go.getZ() - zCorner + 1) * 25), 25, 25);
+					}
+				}
 			}
 			
-			//highlighted squares
-			if(xA != -1)
+			//highlighted squares (for multi-select)
+			if(isSelecting)
+			{
+				g.setColor(Color.lightGray);
+				g.fillRect((cX - xCorner) * 25, 500 - ((cZ - zCorner + 1) * 25), selectionBox.width * 25, selectionBox.height * 25);
+			}
+			//highlighted squares (for add functions)
+			else if(xA != -1)
 			{
 				g.setColor(Color.yellow);
 				g.fillRect((xA - xCorner) * 25, 500 - ((zA - zCorner + 1) * 25), dX * 25, dZ * 25);
@@ -1292,6 +1420,7 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 		}
 		public void mousePressed(MouseEvent m)
 		{
+			parent.mousePressed(m);
 		}
 		public void keyTyped(KeyEvent k)
 		{
@@ -1535,7 +1664,7 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 		public void windowClosing(WindowEvent w)
 		{
 			report("Window closed by user; disposing frame content; frame nullified");
-			parent.edited(after);
+			parent.edited(before, after);
 			frame.dispose();
 			frame = null;
 		}
@@ -1757,7 +1886,7 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 			}
 			else if(e.getSource() == keep)
 			{
-				parent.edited(after);
+				parent.edited(before, after);
 				frame.dispose();
 				frame = null;
 			}
