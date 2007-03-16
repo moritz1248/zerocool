@@ -7,6 +7,8 @@ import com.zerocool.model.ModelLoader;
 import com.zerocool.scene.level.TileObject;
 import java.io.Serializable;
 import java.util.Scanner;
+import com.zerocool.editor.ObjectGroup;
+import java.awt.Color;
 
 /**
  * <code>GameObject</code> Is the overhead for all objects within the application, static or dynamic. 
@@ -22,6 +24,7 @@ public class GameObject extends RenderableObject implements Serializable
 	final int OBJECT_ID;
 	private int orientation;
 	private String textureId; //Texture ID is denoted by the texture filename.
+	private ObjectGroup group;
 
 	/**
 	 * public <code>GameObject</code> extends <code>Node</code> and is the upper level modifier
@@ -64,6 +67,32 @@ public class GameObject extends RenderableObject implements Serializable
 		return OBJECT_ID;
 	}
 	
+	public ObjectGroup getGroup()
+	{
+		return group;
+	}
+	
+	public void setGroup(ObjectGroup parentGroup)
+	{
+		if(group != null)
+		{
+			group.removeObject(this);
+		}
+		group = parentGroup;
+	}
+	
+	public Color getColor()
+	{
+		if(group != null)
+		{
+			return group.getColor();
+		}
+		else
+		{
+			return ObjectGroup.DEFAULT_OBJECT_GROUP.getColor();
+		}
+	}
+	
 	public String getTextureID()
 	{
 		return textureId;
@@ -73,7 +102,6 @@ public class GameObject extends RenderableObject implements Serializable
 	{
 		textureId = textureName;
 	}
-	
 	
 	public GameObject getClone(int id)
 	{
@@ -86,6 +114,7 @@ public class GameObject extends RenderableObject implements Serializable
 		else
 			go = new GameObject(id, getX(), getY(), getZ(), orientation);
 		go.setTextureID(textureId);
+		go.setGroup(group);
 		return go;
 	}
 	
