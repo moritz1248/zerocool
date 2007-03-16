@@ -13,8 +13,8 @@ import com.zerocool.scene.level.TileObject;
 
 public class ObjectGroup
 {
-	public static final String DEFAULT_TEXTURE_FILE = "man.bmp";
-	public static final ObjectGroup DEFAULT_OBJECT_GROUP = new ObjectGroup("Default Group", Color.lightGray, 1, null, null, false, null);
+	public static final String DEFAULT_TEXTURE_FILE = "revention logo.bmp";
+	public static final ObjectGroup DEFAULT_OBJECT_GROUP = new ObjectGroup("Default Group", Color.white, 1, null, null, false, null);
 	private String name;
 	private Color color;
 	private String file;
