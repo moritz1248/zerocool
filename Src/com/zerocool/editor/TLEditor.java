@@ -5,6 +5,7 @@ import com.zerocool.scene.DynamicGameObject;
 import com.zerocool.scene.GameObject;
 import com.zerocool.scene.level.TileObject;
 import javax.swing.*;
+import javax.swing.event.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
@@ -14,13 +15,13 @@ import javax.imageio.ImageIO;
 import java.util.Scanner;
 
 //this edits the levels which consists of tiles...therein the name tileleveleditor.  cause its a level of tiles, a tilelevel...ohhhh
-public class TLEditor extends JPanel implements ActionListener, WindowListener
+public class TLEditor extends JPanel implements ActionListener, WindowListener, ListSelectionListener
 {
 	//the menuBar actually is added to the frame not the panel, so even though the panel implements the menuBar, it doesn't get to keep it.
 	private JMenuBar menuBar;
-	private JMenu fileMenu, layerMenu, tileMenu, toolMenu, helpMenu;
+	private JMenu fileMenu, layerMenu, tileMenu, groupMenu, toolMenu, helpMenu;
 	//MI stands for menu item...or maybe my intelligence
-	private JMenuItem newMI, openMI, saveMI, saveAsMI, exportMI, importMI, exitMI, layerUpMI, layerDownMI, addLayerMI, clearLayerMI, syncronizeMI, addTileMI, editTileMI, deleteTileMI, addBorderMI, addWallMI, addBlockMI, helpMI, aboutMI, editPUMI, deletePUMI;
+	private JMenuItem newMI, openMI, saveMI, saveAsMI, exportMI, importMI, exitMI, layerUpMI, layerDownMI, addLayerMI, clearLayerMI, syncronizeMI, addTileMI, editTileMI, deleteTileMI, addBorderMI, addWallMI, addBlockMI, helpMI, aboutMI, addToGroupPUMI, editPUMI, deletePUMI;
 	//attempting to add a popup menu
 	private JPopupMenu popMenu;
 	//these are the two views of the current level:
@@ -28,13 +29,15 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 	//compositeView is of the whole level, a composite of all the layers
 	private TLEviewer layerView, compositeView;
 	//the controlPanel holds all the controls. the navPanel just holds the up and down buttons
-	private JPanel controlPanel, navPanel;
+	private JPanel controlPanel, navPanel, groupButtPanel, groupPanel;
 	//addTile adds a tile, adjustView adjusts the view, layer up moves up a layer, layer down does the tango and addLayer owns a deep fat fryer
 	private JButton addTile, layerUp, layerDown, addLayer;
+	private JButton addGroup, editGroup, deleteGroup;
 	//this controls whether the two views are synchronized
 	private JRadioButton syncronize;
 	//layerLabel just displays the number of the current layer
-	private JLabel layerLabel, xPosnLabel, zPosnLabel;
+	private JLabel layerLabel, xPosnLabel, zPosnLabel, groupTexture;
+	private JList groupList;
 	//the number of the current layer
 	private int layer;
 	//the current selected Objects in this layer
@@ -44,11 +47,11 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 	//this is the current level
 	private ArrayList<ArrayList<GameObject>> level;
 	//these are the user defined groups
-	private ArrayList<ArrayList<GameObject>> groups;
+	private ArrayList<ObjectGroup> groups;
 	//this var determines whether everything will be printed or not
 	private boolean reportOn;
 	//this determines the next id to be used
-	private int nextID;
+	private static int nextID;
 	//determines state for mouse functions (basically just used for create objects)
 	private int mouseState;
 	//for use whenever needed
@@ -62,7 +65,7 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 	//remember the relative path of this file
 	private String levelFile;
 	//later add support so that it knows whether you have edited something since the last save
-	private boolean edited = false;
+	//private boolean edited = false;
 	//to differentiate between selecting and moving
 	private boolean isSelecting;
 	//for selection
@@ -80,7 +83,7 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 		
 		isSelecting = false;
 		
-		xStart = zStart = -1;
+		xStart = zStart =Integer.MAX_VALUE;
 		
 		nextID = 100;
 		
@@ -92,7 +95,10 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 		else
 			lastAccessed = new File(System.getProperty("user.dir"));
 		
-		groups = new ArrayList<ArrayList<GameObject>>();
+		groups = new ArrayList<ObjectGroup>();
+		groups.add(ObjectGroup.DEFAULT_OBJECT_GROUP);
+		groups.add(new ObjectGroup("Group2"));
+		groups.add(new ObjectGroup("The parrot"));
 
 		level = new ArrayList<ArrayList<GameObject>>();
 		//this initaties the first layer; layer 0
@@ -117,10 +123,49 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 		addLayer.addActionListener(this);
 		syncronize = new JRadioButton("Syncronize Views");
 		syncronize.addActionListener(this);
+		addGroup = new JButton("Add");
+		addGroup.addActionListener(this);
+		editGroup = new JButton("Edit");
+		editGroup.addActionListener(this);
+		deleteGroup = new JButton("Delete");
+		deleteGroup.addActionListener(this);
 		//the labels
 		layerLabel = new JLabel("Layer: 0");
 		xPosnLabel = new JLabel("X: - ");
 		zPosnLabel = new JLabel("Z: - ");
+		groupTexture = new JLabel("Default Group", generateIcon(null, Color.black), JLabel.LEFT);
+		groupTexture.setVerticalTextPosition(JLabel.TOP);
+		groupTexture.setHorizontalTextPosition(JLabel.CENTER);
+		//the list
+		groupList = new JList(groups.toArray());
+		groupList.setCellRenderer(
+			new ListCellRenderer()
+			{
+				public Component getListCellRendererComponent(JList list,Object value,int index,boolean isSelected,boolean cellHasFocus)
+				{
+					JLabel label;
+					if(value.getClass() == ObjectGroup.class)
+					{
+						label = ((ObjectGroup)value).getLabel();
+					}
+					else
+					{
+						label = new JLabel(value.toString());
+					}
+					label.setOpaque(true);
+					if(isSelected)
+					{
+						label.setBackground(Color.orange);
+					}
+					else
+					{
+						label.setBackground(Color.white);
+					}
+					return label;
+				}
+			});
+		groupList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		groupList.addListSelectionListener(this);
 		//the navPanel
 		navPanel = new JPanel();
 		navPanel.setLayout(new GridLayout(1,2));
@@ -137,17 +182,33 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 		controlPanel.add(syncronize);
 		controlPanel.add(xPosnLabel);
 		controlPanel.add(zPosnLabel);
+		//the group button panel
+		groupButtPanel = new JPanel();
+		groupButtPanel.setLayout(new BoxLayout(groupButtPanel, BoxLayout.X_AXIS));
+		groupButtPanel.add(addGroup);
+		groupButtPanel.add(editGroup);
+		groupButtPanel.add(deleteGroup);
+		//the groupPanel
+		groupPanel = new JPanel();
+		groupPanel.setPreferredSize(new Dimension(200, 500));
+		groupPanel.add(groupTexture);
+		groupPanel.add(new JScrollPane(groupList));
+		groupPanel.add(groupButtPanel);
 		//mix it all up and what do you get...?
 		add(layerView);
 		add(controlPanel);
 		add(compositeView);
+		add(groupPanel);
 		
 		//popup menu???
 		popMenu = new JPopupMenu();
+		addToGroupPUMI = new JMenuItem("Add to Selected Group");
+		addToGroupPUMI.addActionListener(this);
 		editPUMI = new JMenuItem("Edit");
 		editPUMI.addActionListener(this);
 		deletePUMI = new JMenuItem("Delete");
 		deletePUMI.addActionListener(this);
+		popMenu.add(addToGroupPUMI);
 		popMenu.add(editPUMI);
 		popMenu.add(deletePUMI);
 		
@@ -157,6 +218,7 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 		fileMenu = new JMenu("File");
 		layerMenu = new JMenu("Layer");
 		tileMenu = new JMenu("Tile");
+		groupMenu = new JMenu("Group");
 		toolMenu = new JMenu("Tools");
 		helpMenu = new JMenu("Help");
 		
@@ -244,6 +306,7 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 		menuBar.add(fileMenu);
 		menuBar.add(tileMenu);
 		menuBar.add(layerMenu);
+		menuBar.add(groupMenu);
 		menuBar.add(toolMenu);
 		menuBar.add(helpMenu);
 	}
@@ -320,15 +383,36 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 			report("User choose to add a tile");
 			addTile();
 		}
+		else if(source == addToGroupPUMI)
+		{
+			report("User choose to add the selected tiles to the selected group");
+			addToGroup((ObjectGroup)groupList.getSelectedValue());
+			selectGroup((ObjectGroup)groupList.getSelectedValue());
+		}
 		else if(source == editTileMI || source == editPUMI)
 		{
 			report("User choose to edit the selected tile");
-			//editTile();
+			editSelection();
 		}
 		else if(source == deleteTileMI || source == deletePUMI)
 		{
 			report("User choose to delete the selected tile");
 			deleteTile();
+		}
+		else if(source == addGroup)
+		{
+			report("User choose to add a group");
+			addGroup();
+		}
+		else if(source == editGroup)
+		{
+			report("User choose to edit the selected group");
+			editGroup();
+		}
+		else if(source == deleteGroup)
+		{
+			report("User choose to delete the selected group");
+			deleteGroup();
 		}
 		else if(source == addBorderMI)
 		{
@@ -357,6 +441,79 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 		}
 		else
 			report("User choose to do nothing");
+	}
+	public void valueChanged(ListSelectionEvent e)
+	{
+		report("User selected a different group");
+		if(!groupList.isSelectionEmpty())
+		{
+			ObjectGroup group = groups.get(groupList.getSelectedIndex());
+			groupTexture.setText(group.getName());
+			groupTexture.setIcon(generateIcon(group.getTextureFile(), group.getColor()));
+			selectGroup(group);
+		}
+	}
+	public void editSelection()
+	{
+		if(!objEdit.isOpen() && selected != null)
+		{
+			ObjectGroup og = new ObjectGroup("", selected);
+			og.setUpdate(true);
+			objEdit = new ObjectEditor(og, this, false);
+		}
+	}
+	public void addGroup()
+	{
+		String groupName = JOptionPane.showInputDialog(this, "What would you like to name this group?", "New Group", JOptionPane.PLAIN_MESSAGE);
+		if(groupName != null && groupName != "")
+		{
+			ObjectGroup og = new ObjectGroup(groupName);
+			groups.add(og);
+			groupList.setListData(groups.toArray());
+		}
+	}
+	public void editGroup()
+	{
+		//opens a editor box
+		if(!objEdit.isOpen() && groupList.getSelectedIndex() > 0)
+		{
+			ObjectGroup og =(ObjectGroup)groupList.getSelectedValue();
+			selectGroup(og);
+			report(og.toString());
+			objEdit = new ObjectEditor(og, this, true);
+		}
+	}
+	public void deleteGroup()
+	{
+		if(groupList.getSelectedIndex() > 0)
+		{
+			ObjectGroup og = groups.remove(groupList.getSelectedIndex());
+			for(GameObject go : og.getObjects())
+			{
+				go.setGroup(null);
+			}
+			groupList.setListData(groups.toArray());
+			groupList.setSelectedValue(groups.get(0), true);
+		}
+	}
+	public void addToGroup(ObjectGroup group)
+	{
+		if(group != null)
+		{
+			for(GameObject go : selected)
+			{
+				group.addObject(go);
+				go.setGroup(group);
+			}
+		}
+	}
+	public void selectGroup(ObjectGroup group)
+	{
+		if(group != null)
+		{
+			selected = group.getObjects();
+		}
+		repaint();
 	}
 	public void clearLayer()
 	{
@@ -426,11 +583,49 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 			System.out.println(out);
 	}
 	//returns the next id
-	public int nextId()
+	public static int nextId()
 	{
 		return nextID++;
 	}
-	public void importLevel()
+	private ImageIcon generateIcon(String imageFile, Color c)
+	{
+		ImageIcon ii;
+		try
+		{
+			//
+			File f = new File(ZCfileFilter.read("TLEditor","TexturePath") + '/' + imageFile);
+			report(f.getPath());
+			BufferedImage bi = ImageIO.read(f);
+			Image img;
+			if(bi.getWidth() / 300.0 > bi.getHeight() / 200.0)
+			{
+				img = bi.getScaledInstance(160, -1, Image.SCALE_FAST);
+			}
+			else
+			{
+				img = bi.getScaledInstance(-1, 160, Image.SCALE_FAST);
+			}
+			bi = new BufferedImage(180, 180, bi.getType());
+			Graphics g = bi.getGraphics();
+			g.setColor(c);
+			g.fillRect(0,0,180,180);
+			g.drawImage(img, 10, 10, null);
+			ii = new ImageIcon(bi);
+		}
+		catch(Exception error)
+		{
+			System.out.println("Error reading file " + imageFile);
+			BufferedImage image = new BufferedImage(180, 180, BufferedImage.TYPE_INT_RGB);
+			Graphics g = image.getGraphics();
+			g.setColor(c);
+			g.fillRect(0,0,180,180);
+			g.setColor(new Color(255 - c.getRed(), 255 - c.getBlue(), 255 - c.getGreen()));
+			g.drawString("Could Not Display", 40, 96);
+			ii = new ImageIcon(image);
+		}
+		return ii;
+	}
+	private void importLevel()
 	{
 		int choice = JOptionPane.showConfirmDialog(this, "Do you want to save the current level first?", "Save?", JOptionPane.YES_NO_OPTION);
 		if(choice == JOptionPane.YES_OPTION)
@@ -750,7 +945,7 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 	}
 	public void createBlock(int x, int z, int dx, int dz)
 	{
-		ArrayList lyr = level.get(layer);
+		ArrayList<GameObject> lyr = level.get(layer);
 		for(int a = 0; a < dx; a++)
 			for(int b = 0; b < dz; b++)
 				if(objectAt(x + a,z - b) == null)
@@ -762,7 +957,7 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 		//opens a editor box
 		if(!objEdit.isOpen() && selected != null)
 		{
-			objEdit = new ObjectEditor(objectAt(x, z), this);
+			objEdit = new ObjectEditor(objectAt(x,z), this);
 		}
 	}
 	public void deleteTile()
@@ -774,9 +969,14 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 			for(GameObject go : selected)
 			{
 				if(thisLayer.remove(go) && thisLayer.size() + 1 == num)
+				{
+					go.getGroup().removeObject(go);
 					report("Tile deleted successfully");
+				}
 				else
+				{
 					report("Error in tile deletion");
+				}
 				num = thisLayer.size();
 			}
 			selected = null;
@@ -835,13 +1035,14 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 	{
 		if(!objEdit.isOpen())
 		{
-			System.out.println(selectionBox + " >>> " + mouseState + " >>> " + isSelecting);
 			if(mouseState == 2 || mouseState == 3 || isSelecting)
 			{
-				if(xStart == -1)
+				if(xStart == Integer.MAX_VALUE || selected != null)
 				{
+					System.out.println(selected + " == null");
 					xStart = x;
 					zStart = z;
+					selected = null;
 				}
 				else
 				{
@@ -909,26 +1110,29 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 		if(mouseState == 2 || mouseState == 3)
 		{
 			createTiles(x, z, mouseState);
+			xStart = Integer.MAX_VALUE;
+			zStart = Integer.MAX_VALUE;
 			mouseState = 0;
 		}
 		if(isSelecting)
 		{
-			System.out.println("Selecting from range " + cX + "-" + cZ + " to " + (cX + selectionBox.width) + "-" + (cZ + selectionBox.height));
 			selected = new ArrayList<GameObject>();
 			for(int i = 0; i < selectionBox.width; i++)
 				for(int j = 0; j < selectionBox.height; j++)
 				{
-					System.out.println("Checking: " + (cX + i) + "-" + (cZ - j));
 					GameObject go = objectAt(cX + i, cZ - j);
 					if(go != null)
 					{
 						selected.add(go);
-						System.out.println("adding one more to the selection");
 					}
 				}
+			if(selected.size() == 0)
+			{
+				selected = null;
+			}
 			isSelecting = false;
 		}
-		xStart = zStart = -1;
+		xStart = zStart = Integer.MAX_VALUE;
 		cX = cZ = -1;
 	}
 	public void mouseClicked(int x, int z, int button)
@@ -950,7 +1154,7 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 		}
 		else if(mouseState == 0 && go != null)
 		{
-			if(!selected.contains(go))
+			if(selected == null || !selected.contains(go))
 			{
 				selected = new ArrayList<GameObject>();
 				selected.add(go);
@@ -965,16 +1169,12 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 					orient = 1;
 				go.setOrientation(orient);
 			}
-			else if(button == 3 && selected != null)
-			{
-				popMenu.show(this, x * 25 + 25, 500 - (z * 25));
-			}
 		}
 		else
 		{
 			selected = null;
-			xStart = -1;
-			zStart = -1;
+			xStart = Integer.MAX_VALUE;
+			zStart = Integer.MAX_VALUE;
 			selectionBox = null;
 		}
 		repaint();
@@ -984,6 +1184,13 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 	{
 		xPosnLabel.setText("X = " + x + " ");
 		zPosnLabel.setText("Z = " + z + " ");
+		if((mouseState == 2 || mouseState == 3) && (selected != null))
+		{
+			xStart = Integer.MAX_VALUE;
+			zStart = Integer.MAX_VALUE;
+			selected = null;
+			
+		}
 		if(mouseState == 1)
 			layerView.draw(x, z, 1, 1, true);
 		else if(mouseState == 2)
@@ -1045,12 +1252,42 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 				return go;
 		return null;
 	}
-	public void edited(GameObject old, GameObject newGO)
+	public void edited(ObjectGroup oldG, ObjectGroup newG, boolean newGroup)
 	{
+		ArrayList<GameObject> oldObjects = oldG.getObjects();
+		ArrayList<GameObject> newObjects = newG.getObjects();
 		ArrayList<GameObject> lyr = level.get(layer);
-		lyr.set(lyr.indexOf(old), newGO);
-		selected.remove(old);
-		selected.add(newGO);
+		for(int c = 0; c < oldObjects.size(); c++)
+		{
+			GameObject old = oldObjects.get(c);
+			if(lyr.contains(old))
+			{
+				lyr.set(lyr.indexOf(old), newObjects.get(c));
+			}
+		}
+		if(newGroup)
+		{
+			for(GameObject go : newObjects)
+			{
+				System.out.println("object removed from " + go.getGroup().getName());
+				go.getGroup().removeObject(go);
+				go.setGroup(newG);
+			}
+			groups.add(newG);
+			groupList.setListData(groups.toArray());
+			groupList.setSelectedValue(newG, true);
+			selectGroup(newG);
+		}
+		else
+		{
+			oldG.matchTo(newG);
+			selectGroup(oldG);
+		}
+		if(oldG == groupList.getSelectedValue())
+		{
+			groupTexture.setText(oldG.getName());
+			groupTexture.setIcon(generateIcon(oldG.getTextureFile(), oldG.getColor()));
+		}
 		report("Changes have been recorded");
 		repaint();
 	}
@@ -1173,6 +1410,10 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 		{
 			int x = (m.getX() / 25) + xCorner;
 			int z = ((500 - m.getY()) / 25) + zCorner;
+			if(m.getButton() == 3 && selected != null)
+			{
+				popMenu.show(this, m.getX(), m.getY());
+			}
 			parent.mouseClicked(x, z, m.getButton());
 		}
 		public void mouseReleased(MouseEvent m)
@@ -1191,13 +1432,15 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 		}
 		public void mousePressed(MouseEvent m)
 		{
-			if(mouseState == 0 && (m.getButton() == MouseEvent.BUTTON2 || m.getButton() == MouseEvent.BUTTON3))
+			int x = (m.getX() / 25) + xCorner;
+			int z = ((500 - m.getY()) / 25) + zCorner;
+			if(mouseState == 0 && (selected == null || objectAt(x,z) == null) && (m.getButton() == MouseEvent.BUTTON2 || m.getButton() == MouseEvent.BUTTON3))
 			{
 				isSelecting = true;
-				xStart = (m.getX() / 25) + xCorner;
-				zStart = ((500 - m.getY()) / 25) + zCorner;
-				cX = xStart;
-				cZ = zStart;
+				xStart = x;
+				zStart = z;
+				cX = x;
+				cZ = z;
 				selectionBox = new Dimension(1,1);
 			}
 		}
@@ -1235,7 +1478,7 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 			//highlighted squares (for multi-select)
 			if(isSelecting)
 			{
-				g.setColor(Color.lightGray);
+				g.setColor(Color.gray);
 				g.fillRect((cX - xCorner) * 25, 500 - ((cZ - zCorner + 1) * 25), selectionBox.width * 25, selectionBox.height * 25);
 			}
 			//highlighted squares (for add functions)
@@ -1284,10 +1527,17 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 				int x = ((int)tile.getX() - xCorner) * 25;
 				int z = 500 - (((int)tile.getZ() - zCorner + 1) * 25);
 				//all shading according to layer
+				if(isSingle)
+				{
+					g.setColor(tile.getColor());
+				}
+				else
+				{
+					g.setColor(new Color(shade, shade, shade));
+				}
 				if(type == -1)
 				{
-					//red triangle for any Dynamic Game Object
-					g.setColor(new Color(shade, 0, 0));
+					//triangle for any Dynamic Game Object
 					if(orientation == 1)
 					{
 						int[] polyX = {x + 3, x + 12, x + 21};
@@ -1315,14 +1565,12 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 				}
 				else if(type == 1)
 				{
-					//green full square for a solid block Tile Object
-					g.setColor(new Color(0, shade, 0));
+					//full square for a solid block Tile Object
 					g.fillRect(x + 3, z + 3, 18, 18);
 				}
 				else if(type == 2)
 				{
-					//green triangle for a sloped wall Tile Object
-					g.setColor(new Color(0, shade, 0));
+					//triangle for a sloped wall Tile Object
 					if(orientation == 1)
 					{
 						int[] polyX = {x + 3, x + 21, x + 3};
@@ -1350,13 +1598,17 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 				}
 				else if(type == 3)
 				{
-					//green fading square for a sloped ramp Tile Object
+					//fading square for a sloped ramp Tile Object
 					for(int step = 0; step < 18; step++)
 					{
+						Color color = tile.getColor();
 						if(isSingle)
-							g.setColor(new Color(0,(206 * step / 18) + 50, 0));
+							g.setColor(new Color((206 * color.getRed() * step / (18 * 255)) + 50,(206 * color.getGreen() * step / (18 * 255)) + 50, (206 * color.getBlue() * step / (18 * 255)) + 50));
 						else
-							g.setColor(new Color(0,(interval*layerNum + (interval*step/18)) + 50,0));
+						{
+							int colorSlice = (interval*layerNum + (interval*step/18)) + 50;
+							g.setColor(new Color(colorSlice, colorSlice, colorSlice));
+						}
 						if(orientation == 1)
 							g.drawLine(x + 3, z + 21 - step,x + 21, z + 21 - step);
 						else if(orientation == 2)
@@ -1369,14 +1621,12 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 				}
 				else if(type == 4)
 				{
-					//green empty square for a spawn point Tile Object
-					g.setColor(new Color(0, shade, 0));
+					//empty square for a spawn point Tile Object
 					g.drawRect(x + 3, z + 3, 18, 18);
 				}
 				else if(type == 5)
 				{
-					//green x for a special tile Tile Object
-					g.setColor(new Color(0, shade, 0));
+					//x for a special tile Tile Object
 					g.drawLine(x + 3, z + 3, x + 21, z + 21);
 					g.drawLine(x + 3, z + 21, x + 21, z +3);
 				}
@@ -1449,16 +1699,21 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 	//this is used to edit tiles and dynamicGameObjects
 	private class ObjectEditor extends WindowAdapter implements ActionListener
 	{
+		private ObjectGroup group;
 		private GameObject before, after;
 		private TLEditor parent;
 		private JFrame frame;
-		private JPanel panel, top, rotate, options, left, right, bottom;
-		private JLabel orientL, imageL, rotateL, posnL, xL, yL, zL, typeL, fileL, textureL;
-		private JButton rLeft, rRight, reset, keep;
+		private JPanel panel, top, options, groupName, sample, gOptions, left, right, bottom;
+		private JLabel typeL, fileL, textureL, groupL, colorL;
+		private JButton reset, keep, pickColor, newGroup, saveGroup;
+		private JRadioButton updater;
+		private JTextField name;
 		private JComboBox typeCB, fileCB, textureCB;
 		private File filePath, texturePath;
 		private File[] allFiles;
 		private File[] allTextures;
+		private boolean isExistingGroup;
+		private Color color;
 		
 		//this is just to create a dummy class
 		private ObjectEditor()
@@ -1466,15 +1721,49 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 			frame = null;
 		}
 		
-		//currently this is configured mainly for a TileObject...more functionality will be added later for the DynamicGameObject
+		private ObjectEditor(ObjectGroup group, TLEditor tle, boolean existant)
+		{
+			this.group = group;
+			if(group.getType() > 0)
+			{
+				before = new TileObject(nextId());
+				((TileObject)before).setType(group.getType());
+			}
+			else
+			{
+				before = new DynamicGameObject(nextId(), null);
+			}
+			before.setTextureID(group.getTextureFile());
+			after = before.getClone(nextId());
+			color = group.getColor();
+			
+			parent = tle;
+			
+			isExistingGroup = existant;
+			
+			createFrame();
+		}
+		
 		private ObjectEditor(GameObject go, TLEditor tle)
 		{
 			//functionality allows the user to reset the object to the before state
 			before = go;
 			after = go.getClone(nextId());
 			
+			group = new ObjectGroup("", go);
+			group.setUpdate(true);
+			
+			color = group.getColor();
+			
 			parent = tle;
 			
+			isExistingGroup = false;
+			
+			createFrame();
+		}
+		
+		private void createFrame()
+		{	
 			//by changing this you can change where the program looks to find the dynamic game object item types
 			String itemPath = ZCfileFilter.read("TLEditor", "ItemPath");
 			if(itemPath != null)
@@ -1494,8 +1783,12 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 			top = new JPanel();
 			panel = new JPanel();
 			panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-			rotate = new JPanel();
-			rotate.setLayout(new BoxLayout(rotate, BoxLayout.X_AXIS));
+			groupName = new JPanel();
+			groupName.setLayout(new BoxLayout(groupName, BoxLayout.X_AXIS));
+			sample = new JPanel();
+			sample.setLayout(new BoxLayout(sample, BoxLayout.X_AXIS));
+			gOptions = new JPanel();
+			gOptions.setLayout(new BoxLayout(gOptions, BoxLayout.X_AXIS));
 			left = new JPanel();
 			left.setLayout(new BoxLayout(left, BoxLayout.Y_AXIS));
 			options = new JPanel();
@@ -1503,33 +1796,40 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 			right = new JPanel();
 			right.setLayout(new BoxLayout(right, BoxLayout.Y_AXIS));
 			bottom = new JPanel();
-			bottom.setLayout(new BoxLayout(bottom, BoxLayout.Y_AXIS));
 			
 			//labels
-			orientL = new JLabel("Orientation: " + go.getOrientation());
-			imageL = new JLabel(new ImageIcon(drawObject()));
-			rotateL = new JLabel("Rotate: ");
-			posnL = new JLabel("Position: ");
-			xL = new JLabel("X: " + go.getX());
-			yL = new JLabel("Y: " + go.getY());
-			zL = new JLabel("Z: " + go.getZ());
 			typeL = new JLabel("Type: ");
 			fileL = new JLabel("Item Type: ");
+			groupL = new JLabel("Group Name: ");
+			colorL = new JLabel(color.getRed()+ " " + color.getGreen() + " " + color.getBlue() + " ", getSwab(), JLabel.LEFT);
 			
 			//buttons
-			rLeft = new JButton("Left");
-			rLeft.addActionListener(this);
-			rRight = new JButton("Right");
-			rRight.addActionListener(this);
 			reset = new JButton("Reset");
 			reset.addActionListener(this);
 			keep = new JButton("Keep");
 			keep.addActionListener(this);
+			pickColor = new JButton("Pick Color");
+			pickColor.addActionListener(this);
+			newGroup = new JButton("New Group");
+			newGroup.addActionListener(this);
+			saveGroup = new JButton("Save Group");
+			saveGroup.addActionListener(this);
+			if(!isExistingGroup)
+			{
+				saveGroup.setEnabled(false);
+			}
+			
+			//radio button
+			updater = new JRadioButton("Use to update");
+			updater.setSelected(group.isUpdater());
+			
+			//text field
+			name = new JTextField(group.getName());
 			
 			//combo boxes
 			String[] allTypes = {"solid block", "sloped wall", "sloped ramp", "spawn point node", "special tile", "dynamic object"};
 			typeCB = new JComboBox(allTypes);
-			int index = go.getType() - 1;
+			int index = before.getType() - 1;
 			if(index < 0)
 				index = 5;
 			typeCB.setSelectedIndex(index);
@@ -1543,9 +1843,9 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 				for(int c = 0; c < allFiles.length; c++)
 					allNames[c] = getName(allFiles[c]);
 				fileCB = new JComboBox(allNames);
-				if(go.getType() == -1)
+				if(before.getType() == -1)
 				{
-					File f = ((DynamicGameObject)go).getFile();
+					File f = ((DynamicGameObject)before).getFile();
 					String name = getName(f);
 					for(int c = 0; c < allNames.length; c++)
 						if(name != null && name.equals(allNames[c]))
@@ -1562,7 +1862,7 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 			{
 				fileCB = new JComboBox();
 			}
-			if(go.getType() != -1)
+			if(before.getType() != -1)
 			{
 				fileCB.setVisible(false);
 				fileL.setVisible(false);
@@ -1576,7 +1876,7 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 				for(int c = 0; c < allTextures.length; c++)
 				{
 					allNames[c] = allTextures[c].getName();
-					if(allNames[c].equals(go.getTextureID()))
+					if(allNames[c].equals(before.getTextureID()))
 					{
 						selection = c;
 					}
@@ -1598,19 +1898,22 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 			textureL.setHorizontalTextPosition(JLabel.CENTER);
 			formatTextureView();
 			
-			rotate.add(rotateL);
-			rotate.add(rLeft);
-			rotate.add(rRight);
-			
-			left.add(orientL);
-			left.add(imageL);
-			left.add(rotate);
-			left.add(xL);
-			left.add(yL);
-			left.add(zL);
-			
 			options.add(reset);
 			options.add(keep);
+			
+			groupName.add(groupL);
+			groupName.add(name);
+			
+			sample.add(colorL);
+			sample.add(pickColor);
+			
+			gOptions.add(newGroup);
+			gOptions.add(saveGroup);
+			
+			left.add(groupName);
+			left.add(sample);
+			left.add(updater);
+			left.add(gOptions);
 			
 			right.add(typeL);
 			right.add(typeCB);
@@ -1629,7 +1932,17 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 			
 			frame.getContentPane().add(panel);
 			frame.pack();
+			frame.setResizable(false);
 			frame.setVisible(true);
+		}
+		
+		private ImageIcon getSwab()
+		{	
+			BufferedImage bi = new BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB);
+			Graphics g = bi.getGraphics();
+			g.setColor(color);
+			g.fillRect(0,0,10,10);
+			return new ImageIcon(bi);
 		}
 		
 		private String getName(File f)
@@ -1664,7 +1977,7 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 		public void windowClosing(WindowEvent w)
 		{
 			report("Window closed by user; disposing frame content; frame nullified");
-			parent.edited(before, after);
+			//parent.edited(before, after);
 			frame.dispose();
 			frame = null;
 		}
@@ -1686,8 +1999,8 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 			int orientation = after.getOrientation();
 			if(type == -1)
 			{
-				//red triangle for any Dynamic Game Object
-				g.setColor(new Color(255, 0, 0));
+				//green triangle for any Dynamic Game Object
+				g.setColor(new Color(0, 255, 0));
 				if(orientation == 1)
 				{
 					int[] polyX = {6, 24, 42};
@@ -1807,23 +2120,7 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 		
 		public void actionPerformed(ActionEvent e)
 		{
-			if(e.getSource() == rLeft)
-			{
-				int alpha = after.getOrientation() - 1;
-				if(alpha <= 0)
-					alpha = 4;
-				orientL.setText("Orientation: " + alpha);
-				after.setOrientation(alpha);
-			}
-			else if(e.getSource() == rRight)
-			{
-				int alpha = after.getOrientation() + 1;
-				if(alpha > 4)
-					alpha = 1;
-				orientL.setText("Orientation: " + alpha);
-				after.setOrientation(alpha);
-			}
-			else if(e.getSource() == typeCB)
+			if(e.getSource() == typeCB)
 			{
 				int type = typeCB.getSelectedIndex() + 1;
 				if(type == 6)
@@ -1844,6 +2141,7 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 					fileL.setVisible(false);
 					fileCB.setVisible(false);
 				}
+				frame.pack();
 				report("New type: " + after.getType());
 			}
 			else if(e.getSource() == fileCB)
@@ -1871,7 +2169,6 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 					fileCB.setVisible(false);
 				}
 				typeCB.setSelectedIndex(index);
-				orientL.setText("Orientation: " + before.getOrientation());
 				int selection = 0;
 				for(int c = 0; c < allTextures.length; c++)
 				{
@@ -1882,15 +2179,43 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener
 					}
 				}
 				textureCB.setSelectedIndex(selection);
+				color = group.getColor();
+				colorL.setIcon(getSwab());
+				colorL.setText(color.getRed() + " " + color.getGreen() + " " + color.getBlue() + " ");
+				name.setText(group.getName());
+				updater.setSelected(group.isUpdater());
 				formatTextureView();
 			}
-			else if(e.getSource() == keep)
+			else if(e.getSource() == keep || e.getSource() == saveGroup)
 			{
-				parent.edited(before, after);
+				ObjectGroup newG = group.getClone();
+				newG.updateProfile(after);
+				newG.setName(name.getText());
+				newG.setColor(color);
+				newG.setUpdate(updater.isSelected());
+				newG.updateAll();
+				parent.edited(group, newG, false);
 				frame.dispose();
 				frame = null;
 			}
-			imageL.setIcon(new ImageIcon(drawObject()));
+			else if(e.getSource() == pickColor)
+			{
+				color = JColorChooser.showDialog(frame, "Pick a color", color);
+				colorL.setText(color.getRed()+ " " + color.getGreen() + " " + color.getBlue() + " ");
+				colorL.setIcon(getSwab());
+			}
+			else if(e.getSource() == newGroup)
+			{
+				ObjectGroup newG = group.getClone();
+				newG.updateProfile(after);
+				newG.setName(name.getText());
+				newG.setColor(color);
+				newG.setUpdate(updater.isSelected());
+				newG.updateAll();
+				parent.edited(group, newG, true);
+				frame.dispose();
+				frame = null;
+			}
 			repaint();
 		}
 	}
