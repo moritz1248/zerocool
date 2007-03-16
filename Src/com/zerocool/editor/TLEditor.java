@@ -936,13 +936,36 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener, 
 	{
 		//sets the mouseState to allow the user to add a wall
 		if(mouseState == 0 && !objEdit.isOpen())
+		{
 			mouseState = 2;
+			selected = null;
+			isSelecting = false;
+			if(xStart != Integer.MAX_VALUE && selectionBox != null)
+			{
+				if(selectionBox.width > selectionBox.height)
+				{
+					layerView.draw(cX, zStart, selectionBox.width, 1, true);
+				}
+				else
+				{
+					layerView.draw(xStart, cZ, 1, selectionBox.height, true);
+				}
+			}
+		}
 	}
 	public void addBlock()
 	{
 		//sets the mouseState to allow the user to add a block of tiles
 		if(mouseState == 0 && !objEdit.isOpen())
+		{
 			mouseState = 3;
+			selected = null;
+			isSelecting = false;
+			if(xStart != Integer.MAX_VALUE && selectionBox != null)
+			{
+				layerView.draw(cX, cZ, selectionBox.width, selectionBox.height, true);
+			}
+		}
 	}
 	public void createTiles(int x, int z, int type)
 	{
@@ -997,13 +1020,16 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener, 
 	public void createBlock(int x, int z, int dx, int dz)
 	{
 		ArrayList<GameObject> lyr = level.get(layer);
+		selected = new ArrayList<GameObject>();
 		for(int a = 0; a < dx; a++)
 			for(int b = 0; b < dz; b++)
 				if(objectAt(x + a,z - b) == null)
 				{
 					if(groupList.getSelectedIndex() < 1 || !useGroupFormat.isSelected())
 					{
-						lyr.add(new TileObject(nextId(),1,x+a,layer,z-b,1)); 
+						TileObject to = new TileObject(nextId(),1,x+a,layer,z-b,1);
+						lyr.add(to);
+						selected.add(to);
 					}
 					else
 					{
@@ -1015,6 +1041,7 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener, 
 							dgo.setGroup(og);
 							og.addObject(dgo);
 							lyr.add(dgo);
+							selected.add(dgo);
 						}
 						else
 						{
@@ -1023,6 +1050,7 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener, 
 							to.setGroup(og);
 							og.addObject(to);
 							lyr.add(to);
+							selected.add(to);
 						}
 					}
 				}
@@ -1191,6 +1219,7 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener, 
 			xStart = Integer.MAX_VALUE;
 			zStart = Integer.MAX_VALUE;
 			mouseState = 0;
+			isSelecting = false;
 		}
 		if(isSelecting && xStart != Integer.MAX_VALUE)
 		{
