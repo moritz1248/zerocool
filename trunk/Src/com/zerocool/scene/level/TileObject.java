@@ -16,6 +16,7 @@ import java.util.Scanner;
  */
 public class TileObject extends GameObject
 {
+	public static final long serialVersionUID = 13003;
 	/**
 	 * Tile types:
 	 *   1. Solid block
