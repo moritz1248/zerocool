@@ -134,8 +134,8 @@ public class ZeroCoolApp extends SimpleZCGame{
 	    player = new PlayerObject(0, ms);
 	    
 //	  *******COLLISION WORK ***********//
-	    player.setModelBound(new BoundingBox());
-	    box_1.setModelBound(new BoundingBox());
+//	    player.setModelBound(new BoundingBox());
+//	    box_1.setModelBound(new BoundingBox());
 //	  *******COLLISION WORK ***********//
 	    
 	    player.setLocalTranslation(new Vector3f(100,10,100));
@@ -143,7 +143,7 @@ public class ZeroCoolApp extends SimpleZCGame{
 	    rootNode.attachChild(player);
 	    
 	    //Get the level and add it to the root node
-	    level.load("Data\\levels\\test2");
+	    level.load("Data\\levels\\test.zcl");
 	    rootNode.attachChild(level);
 	    
 	    item = new ItemObject(02);
@@ -177,7 +177,6 @@ public class ZeroCoolApp extends SimpleZCGame{
 	 * <code>simpleUpdate</code> is called every render refresh
 	 */
 	protected void simpleUpdate() {
-		
 		//Find the time elapsed, everything in the game will be moving at 30 units/second
 		float elapsed = (timer.getFrameRate() / 30f);
 
@@ -185,12 +184,12 @@ public class ZeroCoolApp extends SimpleZCGame{
 		checkKeyboard(elapsed);
 		
 //		*******COLLISION WORK ***********//
-		player.updateModelBound();
+		/*player.updateModelBound();
 		box_1.updateModelBound();
 		rootNode.updateWorldBound();
 		if(box_1.getWorldBound().intersects(player.getWorldBound())){
 			System.out.println("Touching!");
-		}
+		}*/
 //		*******COLLISION WORK ***********//
 		if(isServer)
 		{

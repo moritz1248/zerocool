@@ -5,7 +5,7 @@ import com.jme.renderer.Renderer;
 import com.jme.util.geom.Debugger;
 
 
-public abstract class SimpleZCGame extends BaseSimpleZCGame {
+public abstract class SimpleZCGame extends ZCSimpleBaseGame {
 
     /**
      * Called every frame to update scene information.
