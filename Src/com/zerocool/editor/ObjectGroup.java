@@ -10,9 +10,11 @@ import java.util.Random;
 import java.io.File;
 import com.zerocool.scene.*;
 import com.zerocool.scene.level.TileObject;
+import java.io.Serializable;
 
-public class ObjectGroup
+public class ObjectGroup implements Serializable
 {
+	public static final long serialVersionUID = 13001;
 	public static final String DEFAULT_TEXTURE_FILE = "revention logo.bmp";
 	public static final ObjectGroup DEFAULT_OBJECT_GROUP = new ObjectGroup("Default Group", Color.white, 1, null, null, false, null);
 	private String name;

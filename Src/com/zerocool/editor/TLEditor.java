@@ -83,7 +83,9 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener, 
 		
 		isSelecting = false;
 		
-		xStart = zStart =Integer.MAX_VALUE;
+		xStart = zStart = Integer.MAX_VALUE;
+		
+		cX = cZ = Integer.MAX_VALUE;
 		
 		nextID = 100;
 		
@@ -536,7 +538,14 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener, 
 	{
 		if(group != null)
 		{
-			selected = group.getObjects();
+			selected = new ArrayList<GameObject>();
+			for(GameObject go : group.getObjects())
+			{
+				if(go.getY() == layer)
+				{
+					selected.add(go);
+				}
+			}
 		}
 		repaint();
 	}
@@ -550,26 +559,42 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener, 
 	{
 		if(level.size() > 1)
 		{
+			for(GameObject go : level.get(layer))
+			{
+				go.setGroup(null);
+			}
 			level.remove(layer);
 			layer--;
 			layerView.setLayer(layer);
 			layerLabel.setText("Layer: " + layer);
+			for(int c = layer + 1; c < level.size(); c++)
+			{
+				for(GameObject go : level.get(c))
+				{
+					go.setY(go.getY() - 1);
+				}
+			}
 			selected = null;
 			repaint();
 		}
 	}
 	public void renew()
 	{
+		level = new ArrayList<ArrayList<GameObject>>();
+		level.add(new ArrayList<GameObject>());
 		layer = 0;
 		layerView.setLayer(layer);
 		layerLabel.setText("Layer: " + layer);
-		level = new ArrayList<ArrayList<GameObject>>();
-		level.add(new ArrayList<GameObject>());
 		int choice = JOptionPane.showConfirmDialog(this, "Do you want to border the level area?", "Watch for illegal immigrants", JOptionPane.YES_NO_OPTION);
 		if(choice == JOptionPane.YES_OPTION)
 		{
 			setLayer();
 		}
+		groups = new ArrayList<ObjectGroup>();
+		groups.add(ObjectGroup.DEFAULT_OBJECT_GROUP);
+		groupList.setListData(groups.toArray());
+		levelFile = null;
+		repaint();
 	}
 	public void setLayer()
 	{
@@ -787,8 +812,33 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener, 
 				ObjectInputStream inStream = new ObjectInputStream(fileIS);
 				ArrayList<ArrayList<GameObject>> newLevel = (ArrayList<ArrayList<GameObject>>)inStream.readObject();
 				if(newLevel != null)
+				{
 					level = newLevel;
-				levelFile = file.getPath();
+					levelFile = file.getPath();
+					report("level open complete");
+					groups = null;
+					file = new File(file.getPath().substring(0, file.getPath().length() - 4) + ".zcg");
+					fileIS = new FileInputStream(file);
+					inStream = new ObjectInputStream(fileIS);
+					ArrayList<ObjectGroup> newGroups = (ArrayList<ObjectGroup>)inStream.readObject();
+					if(newGroups != null)
+					{
+						groups = newGroups;
+						for(ObjectGroup og : groups)
+						{
+							for(GameObject go : og.getObjects())
+							{
+								GameObject obj = objectAt((int)go.getX(), (int)go.getY(), (int)go.getZ());
+								go.setGroup(null);
+								go = null;
+								og.addObject(obj);
+								obj.setGroup(og);
+							}
+						}
+						groupList.setListData(groups.toArray());
+						report("groups open complete");
+					}
+				}
 			}
 			catch(IOException e)
 			{
@@ -815,6 +865,12 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener, 
 			return saveAs();
 		}
 		File file = new File(levelFile);
+		String path = file.getPath();
+		if(!path.endsWith(".zcl"))
+		{
+			path += ".zcl";
+			file = new File(path);
+		}
 		report("Attempting to save as " + file);
 		lastAccessed = file;
 		//this code saves the file
@@ -823,15 +879,21 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener, 
 			FileOutputStream fileOS = new FileOutputStream(file);
 			ObjectOutputStream outStream = new ObjectOutputStream (fileOS);
 			outStream.writeObject(level);
+			report("level save complete");
+			file = new File(file.getPath().substring(0, file.getPath().length() - 4) + ".zcg");
+			fileOS = new FileOutputStream(file);
+			outStream = new ObjectOutputStream(fileOS);
+			outStream.writeObject(groups);
+			report("group save complete");
 		}
 		catch(FileNotFoundException e)
 		{
-			report("FileNotFoundException thrown while trying to save level as " + file + ".zcl;  Exception caught");
+			report("FileNotFoundException thrown while trying to save level as " + file + ";  Exception caught");
 			return saveAs();
 		}
 		catch(IOException e)
 		{
-			report("IOException thrown while trying to save level as " + file + ".zcl;  Exception caught");
+			report("IOException thrown while trying to save level as " + file + ";  Exception caught");
 			report(e.toString());
 			return saveAs();
 		}
@@ -846,17 +908,12 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener, 
 	    if(choice == JFileChooser.APPROVE_OPTION && chooser.getSelectedFile() != null)
 	    {
 			File file = chooser.getSelectedFile();
-			//make sure the file is in the right format
-			String path = file.getAbsolutePath();
+			String path = file.getPath();
 			if(!path.endsWith(".zcl"))
 			{
-				if(path.lastIndexOf('.') >= path.length() - 5)
-				{
-					return false;
-				}
 				path += ".zcl";
+				file = new File(path);
 			}
-			file = new File(path);
 			report("Attempting to save as " + file);
 			lastAccessed = file;
 			//this code saves the file
@@ -865,16 +922,22 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener, 
 				FileOutputStream fileOS = new FileOutputStream(file);
 				ObjectOutputStream outStream = new ObjectOutputStream (fileOS);
 				outStream.writeObject(level);
-				levelFile = path;
+				levelFile = file.getPath();
+				report("level save complete");
+				file = new File(file.getPath().substring(0, file.getPath().length() - 4) + ".zcg");
+				fileOS = new FileOutputStream(file);
+				outStream = new ObjectOutputStream(fileOS);
+				outStream.writeObject(groups);
+				report("group save complete"); 
 			}
 			catch(FileNotFoundException e)
 			{
-				report("FileNotFoundException thrown while trying to save level as " + file + ".zcl;  Exception caught");
+				report("FileNotFoundException thrown while trying to save level as " + file + ";  Exception caught");
 				return false;
 			}
 			catch(IOException e)
 			{
-				report("IOException thrown while trying to save level as " + file + ".zcl;  Exception caught");
+				report("IOException thrown while trying to save level as " + file + ";  Exception caught");
 				report(e.toString());
 				return false;
 			}
@@ -909,6 +972,13 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener, 
 		{
 			level.add(layer, new ArrayList<GameObject>());
 			selected = null;
+			for(int c = layer + 1; c < level.size(); c++)
+			{
+				for(GameObject go : level.get(c))
+				{
+					go.setY(go.getY() + 1);
+				}
+			}
 			//layer = level.size() - 1;
 			//layerView.setLayer(layer);
 			//layerLabel.setText("Layer: " + layer);
@@ -1283,10 +1353,13 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener, 
 			level.get(layer).add(tile);
 			selected = new ArrayList<GameObject>();
 			selected.add(tile);
-			xStart = x;
-			zStart = z;
-			selectionBox = new Dimension(1,1);
-			editTile(x, z);
+			xStart = Integer.MAX_VALUE;
+			zStart = Integer.MAX_VALUE;
+			selectionBox = null;
+			if(!useGroupFormat.isSelected())
+			{
+				editTile(x, z);
+			}
 		}
 		else if(mouseState == 0 && go != null)
 		{
@@ -1387,6 +1460,14 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener, 
 				return go;
 		return null;
 	}
+	private GameObject objectAt(int x, int y, int z)
+	{
+		ArrayList<GameObject> lyr = level.get(y);
+		for(GameObject go : lyr)
+			if((int)go.getX() == x && (int)go.getZ() == z)
+				return go;
+		return null;
+	}
 	public void edited(ObjectGroup oldG, ObjectGroup newG, boolean newGroup)
 	{
 		ArrayList<GameObject> oldObjects = oldG.getObjects();
@@ -1466,8 +1547,8 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener, 
 		{
 			layer = lyr;
 			xCorner = zCorner = 0;
-			xStandard = zStandard = -1;
-			xA = zA = dX = dZ = -1;
+			xStandard = zStandard = Integer.MAX_VALUE;
+			xA = zA = dX = dZ = Integer.MAX_VALUE;
 			//i prefer that size
 			setPreferredSize(new Dimension(500, 500));
 			Listener listening = new Listener(this);
@@ -1523,7 +1604,7 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener, 
 			boolean mask = (m.getModifiers() / 2) % 2 == 1;
 			if(!parent.canDragObject(x + xCorner, z + zCorner, m.getButton(), mask))
 			{
-				if(xStandard == -1)
+				if(xStandard == Integer.MAX_VALUE)
 				{
 					xStandard = x;
 					zStandard = z;
@@ -1552,8 +1633,8 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener, 
 		}
 		public void mouseReleased(MouseEvent m)
 		{
-			xStandard = zStandard = -1;
-			draw(-1, -1, -1, -1, true);
+			xStandard = zStandard = Integer.MAX_VALUE;
+			draw(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE, true);
 			int x = (m.getX() / 25) + xCorner;
 			int z = ((500 - m.getY()) / 25) + zCorner;
 			boolean mask = (m.getModifiers() / 2) % 2 == 1;
@@ -1618,9 +1699,10 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener, 
 				g.fillRect((cX - xCorner) * 25, 500 - ((cZ - zCorner + 1) * 25), selectionBox.width * 25, selectionBox.height * 25);
 			}
 			//highlighted squares (for add functions)
-			else if(xA != Integer.MAX_VALUE)
+			else if(zA != Integer.MAX_VALUE)
 			{
 				g.setColor(Color.yellow);
+				System.out.println(xA + "-" + zA + "::" + dX + "-" + dZ);
 				g.fillRect((xA - xCorner) * 25, 500 - ((zA - zCorner + 1) * 25), dX * 25, dZ * 25);
 			}
 			

@@ -18,6 +18,7 @@ import org.keplerproject.luajava.LuaState;
 @SuppressWarnings("serial")
 public class DynamicGameObject extends GameObject
 {
+	public static final long serialVersionUID = 13004;
 	protected String script_file_create;
 	protected String script_file_think;
 	protected String script_file_destroy;

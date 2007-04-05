@@ -21,6 +21,7 @@ import java.awt.Color;
  
 public class GameObject extends RenderableObject implements Serializable
 {
+	public static final long serialVersionUID = 13002;
 	final int OBJECT_ID;
 	private int orientation;
 	private String textureId; //Texture ID is denoted by the texture filename.
