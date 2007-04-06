@@ -56,7 +56,7 @@ public class ZeroCoolApp extends SimpleZCGame{
 	 * LEVEL VARIABLES
 	 */
 	Level level = new Level();
-	ItemObject item;
+	//ItemObject item;
 	String filename;
 	/*
 	 * PLAYER VARIABLES
@@ -140,8 +140,8 @@ public class ZeroCoolApp extends SimpleZCGame{
 	    ms.setShininess(100);
 	    
 
-	    box_1 = new Box("box",new Vector3f(100,0,130), new Vector3f(80,40,140));
-	    rootNode.attachChild(box_1);
+	    //box_1 = new Box("box",new Vector3f(100,0,130), new Vector3f(80,40,140));
+	    //rootNode.attachChild(box_1);
 	    //Create a new player object, controlled by the current user
 	    player = new PlayerObject(0, ms);
 	    
@@ -158,7 +158,7 @@ public class ZeroCoolApp extends SimpleZCGame{
 	    level.load(filename);
 	    rootNode.attachChild(level);
 	    
-	    item = new ItemObject(02);
+	    //item = new ItemObject(02);
 	    
 	    //Initialize the camera
 	    createCamera();
@@ -192,7 +192,7 @@ public class ZeroCoolApp extends SimpleZCGame{
 		//Find the time elapsed, everything in the game will be moving at 30 units/second
 		float elapsed = (timer.getFrameRate() / 30f);
 
-		item.Update(elapsed);
+		//item.Update(elapsed);
 		checkKeyboard(elapsed);
 		
 //		*******COLLISION WORK ***********//
