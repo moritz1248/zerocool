@@ -57,6 +57,7 @@ public class ZeroCoolApp extends SimpleZCGame{
 	 */
 	Level level = new Level();
 	ItemObject item;
+	String filename;
 	/*
 	 * PLAYER VARIABLES
 	 */
@@ -90,13 +91,24 @@ public class ZeroCoolApp extends SimpleZCGame{
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		if(args.length == 0)
+			new ZeroCoolApp(null);
+		else
+			new ZeroCoolApp(args[0]);
+	}
+	
+	public ZeroCoolApp(String file)
+	{
+		filename = "Data\\levels\\test.zcl";
+		if(file != null)
+			filename = "Data\\levels\\" + file;
+		
 		//JMonkeyEngine stuff
         LoggingSystem.getLogger().setLevel(java.util.logging.Level.WARNING);
         //Create a new instance of the application
-        ZeroCoolApp app = new ZeroCoolApp();
-        app.setDialogBehaviour(ALWAYS_SHOW_PROPS_DIALOG);
+        this.setDialogBehaviour(ALWAYS_SHOW_PROPS_DIALOG);
         //Begin the application
-        app.start();
+        this.start();
 	}
 
 	
@@ -143,7 +155,7 @@ public class ZeroCoolApp extends SimpleZCGame{
 	    rootNode.attachChild(player);
 	    
 	    //Get the level and add it to the root node
-	    level.load("Data\\levels\\test.zcl");
+	    level.load(filename);
 	    rootNode.attachChild(level);
 	    
 	    item = new ItemObject(02);
