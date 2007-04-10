@@ -158,4 +158,10 @@ public class GameObject extends RenderableObject implements Serializable
 	 */
 	public void setOrientation(int orientation){this.orientation = orientation;}
 	
+	
+	public String toString()
+	{
+		return "(" + getX() + ", " + getY() + ", " + getZ() + ")";
+	}
+	
 }
