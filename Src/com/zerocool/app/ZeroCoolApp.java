@@ -15,6 +15,7 @@ import com.jme.renderer.ColorRGBA;
 import com.jme.scene.CameraNode;
 import com.jme.scene.Node;
 import com.jme.scene.SceneElement;
+import com.jme.scene.Spatial;
 import com.jme.scene.Text;
 import com.jme.scene.shape.Box;
 import com.jme.scene.shape.Cylinder;
@@ -28,6 +29,8 @@ import com.zerocool.managers.GameAction;
 import com.zerocool.managers.GameKeyAction;
 import com.zerocool.managers.InputManager;
 import com.zerocool.managers.State;
+import com.zerocool.model.ModelLoader;
+import com.zerocool.model.ObjModelLoader;
 import com.zerocool.scene.GameObject;
 import com.zerocool.scene.PlayerObject;
 import com.zerocool.scene.camera.UserCamera;
@@ -51,11 +54,11 @@ public class ZeroCoolApp extends SimpleZCGame{
 	InputManager input = new InputManager();
 	State applicationState = new State(0);
 	
-	
+	ObjModelLoader loader = new ObjModelLoader();
 	/*
 	 * LEVEL VARIABLES
 	 */
-	Level level = new Level();
+	//Level level = new Level();
 	//ItemObject item;
 	String filename;
 	/*
@@ -155,7 +158,8 @@ public class ZeroCoolApp extends SimpleZCGame{
 	    rootNode.attachChild(player);
 	    
 	    //Get the level and add it to the root node
-	    level.load(filename);
+	    //level.load(filename);
+	    Spatial level = loader.loadM("Data/levels/testCompile.obj");
 	    rootNode.attachChild(level);
 	    
 	    //item = new ItemObject(02);
