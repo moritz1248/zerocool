@@ -19,7 +19,7 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener, 
 {
 	//the menuBar actually is added to the frame not the panel, so even though the panel implements the menuBar, it doesn't get to keep it.
 	private JMenuBar menuBar;
-	private JMenu fileMenu, layerMenu, tileMenu, groupMenu, toolMenu, helpMenu;
+	private JMenu fileMenu, layerMenu, groupMenu, tileMenu, toolMenu, helpMenu;
 	//MI stands for menu item...or maybe my intelligence
 	private JMenuItem newMI, openMI, saveMI, saveAsMI, exportMI, importMI, exitMI, layerUpMI, layerDownMI, addLayerMI, insertLayerMI, clearLayerMI, deleteLayerMI, syncronizeMI, addTileMI, editTileMI, deleteTileMI, addBorderMI, addWallMI, addBlockMI, helpMI, aboutMI, addToGroupPUMI, editPUMI, deletePUMI;
 	//attempting to add a popup menu
@@ -28,15 +28,14 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener, 
 	//layerView is only of the current layer
 	//compositeView is of the whole level, a composite of all the layers
 	private TLEviewer layerView, compositeView;
-	//the controlPanel holds all the controls. the navPanel just holds the up and down buttons
-	private JPanel controlPanel, navPanel, layerButt, groupButtPanel, groupPanel;
 	//addTile adds a tile, adjustView adjusts the view, layer up moves up a layer, layer down does the tango and addLayer owns a deep fat fryer
 	private JButton addTile, layerUp, layerDown, addLayer, insertLayer;
 	private JButton addGroup, editGroup, deleteGroup;
 	//this controls whether the two views are synchronized
-	private JRadioButton syncronize, useGroupFormat;
+	private JRadioButton syncronize, useGroupFormat, viewAll;
 	//layerLabel just displays the number of the current layer
-	private JLabel layerLabel, xPosnLabel, zPosnLabel, groupTexture;
+	private JLabel layerLabel, xPosnLabel, zPosnLabel, groupTexture, aboveL, belowL;
+	private JTextField above, below;
 	private JList groupList;
 	//the number of the current layer
 	private int layer;
@@ -126,7 +125,9 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener, 
 		syncronize = new JRadioButton("Syncronize Views");
 		syncronize.addActionListener(this);
 		useGroupFormat = new JRadioButton("Use Group Format");
-		useGroupFormat.addActionListener(this);
+		viewAll = new JRadioButton("View All Layers");
+		viewAll.addActionListener(this);
+		viewAll.setSelected(true);
 		addGroup = new JButton("Add");
 		addGroup.addActionListener(this);
 		editGroup = new JButton("Edit");
@@ -140,6 +141,15 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener, 
 		groupTexture = new JLabel("Default Group", generateIcon(null, Color.black), JLabel.LEFT);
 		groupTexture.setVerticalTextPosition(JLabel.TOP);
 		groupTexture.setHorizontalTextPosition(JLabel.CENTER);
+		aboveL = new JLabel("Above: ");
+		belowL = new JLabel("Below: ");
+		//the text fields
+		above = new JTextField("0");
+		above.addActionListener(this);
+		above.setEnabled(false);
+		below = new JTextField("0");
+		below.addActionListener(this);
+		below.setEnabled(false);
 		//the list
 		groupList = new JList(groups.toArray());
 		groupList.setCellRenderer(
@@ -172,12 +182,24 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener, 
 		groupList.addListSelectionListener(this);
 		//groupList.setPreferredSize(new Dimension(180,-1));
 		//the navPanel
-		navPanel = new JPanel();
+		JPanel navPanel = new JPanel();
 		navPanel.setLayout(new GridLayout(1,2));
 		navPanel.add(layerUp);
 		navPanel.add(layerDown);
+		//the posnPanel
+		JPanel posnPanel = new JPanel();
+		posnPanel.setLayout(new GridLayout(1,2));
+		posnPanel.add(xPosnLabel);
+		posnPanel.add(zPosnLabel);
+		//the viewPanel
+		JPanel viewPanel = new JPanel();
+		viewPanel.setLayout(new GridLayout(1,4));
+		viewPanel.add(aboveL);
+		viewPanel.add(above);
+		viewPanel.add(belowL);
+		viewPanel.add(below);
 		//the controlPanel
-		controlPanel = new JPanel();
+		JPanel controlPanel = new JPanel();
 		controlPanel.setPreferredSize(new Dimension(200, 500));
 		controlPanel.setLayout(new GridLayout(10,1));
 		controlPanel.add(addTile);
@@ -187,16 +209,17 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener, 
 		controlPanel.add(insertLayer);
 		controlPanel.add(syncronize);
 		controlPanel.add(useGroupFormat);
-		controlPanel.add(xPosnLabel);
-		controlPanel.add(zPosnLabel);
+		controlPanel.add(posnPanel);
+		controlPanel.add(viewAll);
+		controlPanel.add(viewPanel);
 		//the group button panel
-		groupButtPanel = new JPanel();
+		JPanel groupButtPanel = new JPanel();
 		groupButtPanel.setLayout(new BoxLayout(groupButtPanel, BoxLayout.X_AXIS));
 		groupButtPanel.add(addGroup);
 		groupButtPanel.add(editGroup);
 		groupButtPanel.add(deleteGroup);
 		//the groupPanel
-		groupPanel = new JPanel();
+		JPanel groupPanel = new JPanel();
 		groupPanel.setPreferredSize(new Dimension(200, 500));
 		groupPanel.add(groupTexture);
 		JScrollPane jsp = new JScrollPane(groupList);
@@ -405,6 +428,29 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener, 
 				report("User choose to enable free view");
 			compositeView.syncronize();
 		}
+		else if(source == viewAll)
+		{
+			if(viewAll.isSelected())
+			{
+				report("User choose to set composite view to show all layers");
+				above.setEnabled(false);
+				below.setEnabled(false);
+				fixAB();
+			}
+			else
+			{
+				above.setEnabled(true);
+				below.setEnabled(true);
+				report("User choose to set composite view to show only some layers");
+			}
+			repaint();
+		}
+		else if(source == above || source == below)
+		{
+			report("User adjusted the value of above or below");
+			fixAB();
+			repaint();
+		}
 		else if(source == addTile || source == addTileMI)
 		{
 			report("User choose to add a tile");
@@ -468,6 +514,52 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener, 
 		}
 		else
 			report("User choose to do nothing");
+	}
+	private void fixAB()
+	{
+		//viewAll selected dictates the values of above and below
+		if(viewAll.isSelected())
+		{
+			below.setText("" + layer);
+			above.setText("" + (level.size() - layer - 1));
+			return;
+		}
+		//format above text
+		try
+		{
+			Integer a = new Integer(above.getText().trim());
+			int aNum = a.intValue();
+			if(aNum > (level.size() - layer - 1))
+			{
+				above.setText("" + (level.size() - layer - 1));
+			}
+			else if(aNum < 0)
+			{
+				above.setText("0");
+			}
+		}
+		catch(NumberFormatException nfe)
+		{
+			above.setText("" + (level.size() - layer - 1));
+		}
+		//format below text
+		try
+		{
+			Integer b = new Integer(below.getText().trim());
+			int bNum = b.intValue();
+			if(bNum > layer)
+			{
+				below.setText("" + layer);
+			}
+			else if(bNum < 0)
+			{
+				below.setText("0");
+			}
+		}
+		catch(NumberFormatException nfe)
+		{
+			below.setText("" + layer);
+		}
 	}
 	public void valueChanged(ListSelectionEvent e)
 	{
@@ -575,6 +667,7 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener, 
 				}
 			}
 			selected = null;
+			fixAB();
 			repaint();
 		}
 	}
@@ -964,6 +1057,7 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener, 
 			layerLabel.setText("Layer: " + layer);
 			report("Layer decreased. Current layer: " + layer);
 		}
+		fixAB();
 		repaint();
 	}
 	public void addLayer(boolean insert)
@@ -983,7 +1077,6 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener, 
 			//layerView.setLayer(layer);
 			//layerLabel.setText("Layer: " + layer);
 			report("Layer added. Current layer: " + layer);
-			repaint();
 		}
 		else
 		{
@@ -993,8 +1086,9 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener, 
 			layerView.setLayer(layer);
 			layerLabel.setText("Layer: " + layer);
 			report("Layer added. Current layer: " + layer);
-			repaint();
 		}
+		fixAB();
+		repaint();
 	}
 	public void addTile()
 	{
@@ -1539,13 +1633,15 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener, 
 	private class TLEviewer extends JPanel
 	{
 		//determines which layer will be drawn...if -1 then all layers will be drawn
-		private int layer, xCorner, zCorner, xStandard, zStandard, xA, zA, dX, dZ;
+		private int layerNum, xCorner, zCorner, xStandard, zStandard, xA, zA, dX, dZ;
 		private TLEditor parent;
 		private TLEviewer brother;
+		private boolean dragging;
 		
 		private TLEviewer(int lyr, TLEditor tle)
 		{
-			layer = lyr;
+			dragging = false;
+			layerNum = lyr;
 			xCorner = zCorner = 0;
 			xStandard = zStandard = Integer.MAX_VALUE;
 			xA = zA = dX = dZ = Integer.MAX_VALUE;
@@ -1594,7 +1690,7 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener, 
 		}
 		public void setLayer(int lyr)
 		{
-			layer = lyr;
+			layerNum = lyr;
 			repaint();
 		}
 		public void mouseDragged(MouseEvent m)
@@ -1602,12 +1698,13 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener, 
 			int x = (m.getX() / 25);
 			int z = ((500 - m.getY()) / 25);
 			boolean mask = (m.getModifiers() / 2) % 2 == 1;
-			if(!parent.canDragObject(x + xCorner, z + zCorner, m.getButton(), mask))
+			if(dragging || !parent.canDragObject(x + xCorner, z + zCorner, m.getButton(), mask))
 			{
 				if(xStandard == Integer.MAX_VALUE)
 				{
 					xStandard = x;
 					zStandard = z;
+					dragging = true;
 				}
 				else
 				{
@@ -1633,6 +1730,7 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener, 
 		}
 		public void mouseReleased(MouseEvent m)
 		{
+			dragging = false;
 			xStandard = zStandard = Integer.MAX_VALUE;
 			draw(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE, true);
 			int x = (m.getX() / 25) + xCorner;
@@ -1715,30 +1813,35 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener, 
 			}
 			
 			//objects
-			if(layer == -1)
-				for(int lyr = 0; lyr < level.size(); lyr++)
+			fixAB();
+			int a = (new Integer(above.getText())).intValue();
+			int b = (new Integer(below.getText())).intValue();
+			if(layerNum == -1)
+				for(int lyr = layer - b; lyr <= layer + a; lyr++)
 					drawLayer(lyr, false, g);
 			else
-				drawLayer(layer, true, g);
+				drawLayer(layerNum, true, g);
 		}
 		
 		public void drawLayer(int layerNum, boolean isSingle, Graphics g)
 		{
 			//draw all objects which reside in the current layer
-			ArrayList<GameObject> layer = level.get(layerNum);
+			ArrayList<GameObject> layerN = level.get(layerNum);
 			//shade is the highest shade used for this layer
+			int a = (new Integer(above.getText())).intValue();
+			int b = (new Integer(below.getText())).intValue();
 			int shade;
 			if(isSingle)
 				shade = 255;
 			else
-				shade = ((206 * (layerNum + 1)) / level.size()) + 49;
+				shade = ((206 * (layerNum - layer + b + 1)) / (a + b + 1)) + 49;
 			//interval is the range of shades that can be used for this layer
 			int interval;
 			if(isSingle)
 				interval = 206;
 			else
-				interval = 206 / level.size();
-			for(GameObject tile : layer)
+				interval = 206 / (a + b + 1);
+			for(GameObject tile : layerN)
 			{
 				int type = tile.getType();
 				int orientation = tile.getOrientation();
@@ -1824,7 +1927,7 @@ public class TLEditor extends JPanel implements ActionListener, WindowListener, 
 							g.setColor(new Color((206 * color.getRed() * step / (18 * 255)) + 50,(206 * color.getGreen() * step / (18 * 255)) + 50, (206 * color.getBlue() * step / (18 * 255)) + 50));
 						else
 						{
-							int colorSlice = (interval*layerNum + (interval*step/18)) + 50;
+							int colorSlice = (interval*(layerNum - layer + b) + (interval*step/18)) + 50;
 							g.setColor(new Color(colorSlice, colorSlice, colorSlice));
 						}
 						if(orientation == 1)
