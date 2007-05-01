@@ -54,6 +54,7 @@ public class ModelViewerCanvas extends Canvas {
 	public void loadModel(String filename) throws Exception
 	{
 		File file = new File(filename);
+		mCurStatus = Status.Spinning;
 	}
 	
 	public void setSpinState(boolean spinning)
