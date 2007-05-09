@@ -13,6 +13,7 @@ public class ModelViewerCanvas extends Canvas {
 	private boolean mIsSpinning = true;
 	private double mSpinSpeed = 0.5;
 	private double mSpin = 0.0;
+	private File file;
 	
 	public ModelViewerCanvas()
 	{
@@ -51,10 +52,16 @@ public class ModelViewerCanvas extends Canvas {
 		}
 	}
 	
-	public void loadModel(String filename) throws Exception
+	public void loadModel(String filename)
 	{
-		File file = new File(filename);
+		loadModel(new File(filename));
+	}
+	
+	public void loadModel(File file)
+	{
+		this.file = file;
 		mCurStatus = Status.Spinning;
+		repaint();
 	}
 	
 	public void setSpinState(boolean spinning)
@@ -69,17 +76,17 @@ public class ModelViewerCanvas extends Canvas {
 	
 	public void turnLeft()
 	{
-		
+		repaint();
 	}
 	
 	public void turnRight()
 	{
-		
+		repaint();
 	}
 	
 	public void setToCenter()
 	{
-		
+		repaint();
 	}
 	
 }
