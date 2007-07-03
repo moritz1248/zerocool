@@ -22,13 +22,16 @@ import com.jfysics.physics.bodies.polygon.RigidPolygon;
 
 public class PolygonIntersectionTest extends JPanel{
 
-	int poly_count = 10;
+	int poly_count = 20;
 	boolean[] collide = new boolean[poly_count];
 	boolean[] box_collide = new boolean[poly_count];
 	RigidPolygon[] polygons = new RigidPolygon[poly_count];
+	RigidPolygon[] polygonBuffer = new RigidPolygon[poly_count];
 	BoundingBox b_left, b_right, b_top, b_bottom;
 	Color[] colors = new Color[poly_count];
+	
 	Vector2d[] velocities = new Vector2d[poly_count];
+	
     int width = 500;
 	int height = 500;
 	public static void main(String ... args){
@@ -56,6 +59,7 @@ public class PolygonIntersectionTest extends JPanel{
 			velocities[j] = new Vector2d(.5d * Math.cos(Math.random() * 2 * Math.PI),.5d *  Math.sin(Math.random() * 2 * Math.PI));
 			polygons[j] = new RigidPolygon(vectorList);
 			polygons[j].setPosition(new Vector2d(Math.random() * 350 + 50,Math.random() * 350 + 50));
+			polygons[j].setRotationalVelocity(-0.02);
 		}
 		
 		JFrame frame = new JFrame("Line Intersection Example");
@@ -80,13 +84,143 @@ public class PolygonIntersectionTest extends JPanel{
 		});
 		t.start();
 	}
+	public void createPolygonBuffer()
+	{
+		if(polygonBuffer == null)
+		{
+			polygonBuffer = new RigidPolygon[poly_count];
+		}
+		RigidPolygon p;
+		for(int j = 0; j < polygons.length; j++)
+		{
+			p = polygons[j];
+			double x1, y1, x2, y2;
+			Vector2d loc = p.getPosition();
+			ArrayList<Vector2d> vectors = p.getVectors();
+			double f = p.getRotation();
+			ArrayList<Vector2d> polyVec = new ArrayList<Vector2d>();
+			for(int i = 0; i < p.getPointCount(); i++)
+			{
+				Vector2d temp = vectors.get(i);
+				
+				x1 = temp.getX();
+				y1 = temp.getY();
+				x2 = (int)(x1 * Math.cos(f) - y1 * Math.sin(f));
+				y2 = (int)(y1 * Math.cos(f) + x1 * Math.sin(f));
+				polyVec.add(new Vector2d(x2, y2));
+			}
+			polygonBuffer[j] = new RigidPolygon(polyVec);
+			polygonBuffer[j].setPosition(loc);
+		}
+	}
+	
+	public void calculateSpin(int polygon1, Vector2d collision, int polygon2) {
+
+		
+		double i1 = 10;
+		
+		double i2 = 10;
+		
+		double m1 = 10;
+		
+		double w1 = polygons[polygon1].getRotationalVelocity();
+		
+		Vector2d vel1 = velocities[polygon1];
+		
+		Vector2d loc1 = polygons[polygon1].getPosition();
+		
+		double m2 = 10;
+		
+		double w2 = polygons[polygon2].getRotationalVelocity();
+
+		Vector2d vel2 = velocities[polygon2];
+		
+		Vector2d loc2 = polygons[polygon2].getPosition();
+		
+		double dPx = m1 * vel1.getX() + m2 * vel2.getX();
+
+		double dPy = m1 * vel1.getY() + vel2.getY();
+
+		// constants to minimize repeat calculations
+
+		double wdx1 = collision.getX() - loc1.getX();
+
+		double wdy1 = collision.getY() - loc1.getY();
+
+		double wdx2 = collision.getX() - loc2.getX();
+
+		double wdy2 = collision.getY() - loc2.getY();
+
+		double wH1 = Math.sqrt(wdx1 * wdx1 + wdy1 * wdy1);
+
+		double wH2 = Math.sqrt(wdx2 * wdx2 + wdy2 * wdy2);
+
+		// the change in momentum
+
+		dPx += (wdx1 * i1 * w1 / wH1) + (wdx2 * i2 * w2 / wH2);
+
+		dPy += (wdy1 * i1 * w1 / wH1) + (wdy2 * i2 * w2 / wH2);
+
+		// more constants to minimize repeat calculations
+
+		double k1 = wdx1 / wH1;
+
+		double q1 = Math.sqrt((dPx * dPx + dPy * dPy) / (2 * k1 * k1));
+
+		double tan1 = wdy1 / wdx1;
+
+		double dVx1 = dPy - q1;
+
+		double dVy1 = dVx1 * tan1;
+
+		double dW1 = q1 * Math.sqrt(1 - tan1);
+
+		double k2 = wdx2 / wH2;
+
+		double q2 = Math.sqrt((dPx * dPx + dPy * dPy) / (2 * k2 * k2));
+
+		double tan2 = wdy2 / wdx2;
+
+		double dVx2 = dPy - q2;
+
+		double dVy2 = dVx2 * tan2;
+
+		double dW2 = q2 * Math.sqrt(1 - tan1);
+
+		// now you can set the variables
+
+		dW1 *= 0.00;
+		dW2 *= 0.00;
+		
+		vel1.add(new Vector2d(dVx1, dVy1));
+		
+		velocities[polygon1] = vel1;
+
+		w1 += dW1;
+		
+		polygons[polygon1].setRotationalVelocity(w1);
+
+		vel2.add(new Vector2d(dVx2, dVy2));
+		
+		velocities[polygon2] = vel2;
+		
+
+		w2 += dW2;
+		polygons[polygon2].setRotationalVelocity(w2);
+
+	}
 	
 	
 	public void paintComponent(Graphics g){
+		createPolygonBuffer();
 		g.setColor(Color.WHITE);
 		g.fillRect(0,0,width,height);
-		for(int i = 0; i < polygons.length; i++)
+		for(int i = 0; i < polygonBuffer.length; i++)
 		{
+			if(polygons[i].getRotationalVelocity() != -0.02)
+				System.out.println("WTF " + polygons[i].getRotationalVelocity());
+			
+			polygons[i].setRotation(polygons[i].getRotation() + polygons[i].getRotationalVelocity());
 			polygons[i].setPosition(polygons[i].getPosition().add(velocities[i]));
 			if(polygons[i].getBounds().collides(b_top))
 				velocities[i].multY(-1);
@@ -97,8 +231,8 @@ public class PolygonIntersectionTest extends JPanel{
 			if(polygons[i].getBounds().collides(b_right))
 				velocities[i].multX(-1);
 			boolean boxIsTouching = false, polyIsTouching = false;
-			for(int j = i; j < polygons.length; j++)
-				if((i != j) && (polygons[i].getBounds().collides(polygons[j].getBounds())))
+			for(int j = i; j < polygonBuffer.length; j++)
+				if((i != j) && (polygonBuffer[i].getBounds().collides(polygonBuffer[j].getBounds())))
 				{
 					boxIsTouching = true;
 					box_collide[i] = true;
@@ -108,9 +242,9 @@ public class PolygonIntersectionTest extends JPanel{
 			if(box_collide[i])
 			{
 				
-				for(int j = i; j < polygons.length; j++)
+				for(int j = i; j < polygonBuffer.length; j++)
 				{
-					Vector2d intersect = polygons[i].checkCollide(polygons[j]);
+					Vector2d intersect = polygonBuffer[i].checkCollide(polygonBuffer[j]);
 					if((i != j) && (intersect != null))
 					{
 						if(!collide[i])
@@ -119,24 +253,25 @@ public class PolygonIntersectionTest extends JPanel{
 							collide[j] = true;
 						g.setColor(Color.black);
 						g.drawOval((int)intersect.getX()-5, (int)intersect.getY() - 5, 10, 10);
+						calculateSpin(i, intersect, j);
 						polyIsTouching = true;
 						break;
 					}
 				}
 			}
 			if(box_collide[i])
-				drawBoundingBox(g, polygons[i], Color.red);
+				drawBoundingBox(g, polygonBuffer[i], Color.red);
 			if(collide[i])
-				drawPolygon(g, polygons[i], false, Color.red);
+				drawPolygon(g, polygonBuffer[i], false, Color.red);
 			else
-				drawPolygon(g, polygons[i], false, Color.lightGray);
-			drawPolygon(g, polygons[i], true, Color.black);
+				drawPolygon(g, polygonBuffer[i], false, Color.lightGray);
+			drawPolygon(g, polygonBuffer[i], true, Color.black);
 			collide[i] = false;
 			box_collide[i] = false;
 		}
 		g.setColor(Color.BLACK);
 
-		g.drawString("The " + poly_count + " randomly generated polygons will turn red when colliding.", 10, 20);
+		g.drawString("The " + poly_count + " randomly generated polygonBuffer will turn red when colliding.", 10, 20);
 		
 	}
 	
@@ -151,13 +286,19 @@ public class PolygonIntersectionTest extends JPanel{
 	{
 		int[] x = new int[polygon.getPointCount()];
 		int[] y = new int[polygon.getPointCount()];
+		double x1, y1;
 		Vector2d loc = polygon.getPosition();
 		ArrayList<Vector2d> vectors = polygon.getVectors();
 		for(int i = 0; i < polygon.getPointCount(); i++)
 		{
 			Vector2d temp = vectors.get(i);
-			x[i] = (int)(temp.getX() + loc.getX());
-			y[i] = (int)(temp.getY() + loc.getY());
+			double f = polygon.getRotation();
+			x1 = temp.getX();
+			y1 = temp.getY();
+			x[i] =(int)(x1 + loc.getX());
+			y[i] =(int)(y1 + loc.getY());
+			//x[i] = (int)(x1 * Math.cos(f) - y1 * Math.sin(f) + loc.getX());
+			//y[i] = (int)(y1 * Math.cos(f) + x1 * Math.sin(f) + loc.getY());
 		}
 		g.setColor(color);
 		if(isOutline)
