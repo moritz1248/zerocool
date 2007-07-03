@@ -51,10 +51,14 @@ public class PolygonIntersectionTest extends JPanel{
 			box_collide[j] = false;
 			collide[j] = false;
 			vectorList = new ArrayList<Vector2d>();
-			for(int i = 0; i < 10; i++)
-			{
-				vectorList.add(new Vector2d(Math.cos(Math.toRadians(36 * i)) * (Math.random() * 30 + 5), Math.sin(Math.toRadians(36 * i)) * (Math.random() * 30 + 5)));
-			}
+			vectorList.add(new Vector2d(-20, -20));
+			vectorList.add(new Vector2d(20, -20));
+			vectorList.add(new Vector2d(20, 20));
+			vectorList.add(new Vector2d(-20, 20));
+			//for(int i = 0; i < 10; i++)
+			//{
+			//	vectorList.add(new Vector2d(Math.cos(Math.toRadians(36 * i)) * (Math.random() * 30 + 5), Math.sin(Math.toRadians(36 * i)) * (Math.random() * 30 + 5)));
+			//}
 			colors[j] = new Color((int)(Math.random() * 255), (int)(Math.random() * 255), (int)(Math.random() * 255));
 			velocities[j] = new Vector2d(.5d * Math.cos(Math.random() * 2 * Math.PI),.5d *  Math.sin(Math.random() * 2 * Math.PI));
 			polygons[j] = new RigidPolygon(vectorList);
