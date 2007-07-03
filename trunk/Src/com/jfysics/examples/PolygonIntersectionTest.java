@@ -116,6 +116,7 @@ public class PolygonIntersectionTest extends JPanel{
 	
 	public void calculateSpin(int polygon1, Vector2d collision, int polygon2) {
 
+		double c = 1000000;
 		
 		double i1 = 10;
 		
@@ -139,7 +140,7 @@ public class PolygonIntersectionTest extends JPanel{
 		
 		double dPx = m1 * vel1.getX() + m2 * vel2.getX();
 
-		double dPy = m1 * vel1.getY() + vel2.getY();
+		double dPy = m1 * vel1.getY() + m2 * vel2.getY();
 
 		// constants to minimize repeat calculations
 
@@ -173,7 +174,7 @@ public class PolygonIntersectionTest extends JPanel{
 
 		double dVy1 = dVx1 * tan1;
 
-		double dW1 = q1 * Math.sqrt(1 - tan1);
+		double dW1 = q1;
 
 		double k2 = wdx2 / wH2;
 
@@ -185,27 +186,24 @@ public class PolygonIntersectionTest extends JPanel{
 
 		double dVy2 = dVx2 * tan2;
 
-		double dW2 = q2 * Math.sqrt(1 - tan1);
+		double dW2 = q2;
 
 		// now you can set the variables
-
-		dW1 *= 0.00;
-		dW2 *= 0.00;
 		
-		vel1.add(new Vector2d(dVx1, dVy1));
+		vel1 = vel1.add(new Vector2d(dVx1/c, dVy1/c));
 		
 		velocities[polygon1] = vel1;
 
-		w1 += dW1;
+		w1 += dW1/c;
 		
 		polygons[polygon1].setRotationalVelocity(w1);
 
-		vel2.add(new Vector2d(dVx2, dVy2));
+		vel2 = vel2.add(new Vector2d(dVx2/c, dVy2/c));
 		
 		velocities[polygon2] = vel2;
 		
 
-		w2 += dW2;
+		w2 += dW2/c;
 		polygons[polygon2].setRotationalVelocity(w2);
 
 	}
