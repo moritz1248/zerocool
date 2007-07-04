@@ -35,6 +35,15 @@ public class Vector2d {
 		Vector2d result = new Vector2d(x + add.getX(), y + add.getY());
 		return result;
 	}
+	public Vector2d subtract(Vector2d add){
+		Vector2d result = new Vector2d(x - add.getX(), y - add.getY());
+		return result;
+	}
+	public Vector2d mult(double m)
+	{
+		Vector2d result = new Vector2d(x * m, y * m);
+		return result;
+	}
 	public String toString(){
 		return "(" + x + ", " + y + ")";
 	}
@@ -49,5 +58,10 @@ public class Vector2d {
 	public Vector2d clone()
 	{
 		return new Vector2d(this.x, this.y);
+	}
+	
+	public double dot(Vector2d vec)
+	{
+		return x * vec.x + y * vec.y;
 	}
 }
