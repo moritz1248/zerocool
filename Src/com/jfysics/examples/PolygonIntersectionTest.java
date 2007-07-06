@@ -23,7 +23,7 @@ import com.jfysics.physics.bodies.polygon.RigidPolygon;
 
 public class PolygonIntersectionTest extends JPanel{
 
-	int poly_count = 5;
+	int poly_count = 10;
 	boolean[] collide = new boolean[poly_count];
 	boolean[] box_collide = new boolean[poly_count];
 	RigidPolygon[] polygons = new RigidPolygon[poly_count];
@@ -123,34 +123,37 @@ public class PolygonIntersectionTest extends JPanel{
 		
 		double e = 1; 											//elasticity
 		
-		double ma = 10;											//mass for object A
-		double wa = polygons[polygon1].getRotationalVelocity();	//rotational speed for object A
+		double mia = .1;										//inverse mass for object A
+		double iIa = 1;											//inverse rotational inertia for object A
+		double wa = polygons[polygon1].getRotationalVelocity();	//rotational velocity for object A
 		Vector2d va1 = velocities[polygon1];					//velocity for object A
 		Vector2d pa = polygons[polygon1].getPosition();			//location for object A
 		
-		double mb = 10;											//mass for object B
-		double wb = polygons[polygon2].getRotationalVelocity();	//rotational speed for object B
+		double mib = .1;										//inversemass for object B
+		double iIb = 1;											//inverse rotational inertia for object B
+		double wb = polygons[polygon2].getRotationalVelocity();	//rotational velocity for object B
 		Vector2d vb1 = velocities[polygon2];					//velocity for object B
 		Vector2d pb = polygons[polygon2].getPosition();			//location for object B
-		
-		Vector2d wva;											//rotational velocity for object A
-		Vector2d wvb;											//rotational velocity for object B
 		
 		Vector2d r1 = collision.subtract(pa);
 		Vector2d r2 = collision.subtract(pb);
 		
-		//Vector2d vel1 = va1.add(wva.cross(r1));
+		Vector2d vel1 = va1.add(r1.cross(wa));
+		Vector2d vel2 = vb1.add(r2.cross(wb));
 		
 		Vector2d n = pb.subtract(pa);							//collision normal
-		Vector2d vr = va1.subtract(vb1);						//relative velocity
-		double vDotN = vr.dot(n);								//cross
+		Vector2d vab = vel1.subtract(vel2);						//relative velocity
+		double vDotN = vab.dot(n);								//cross
 		
 		double numerator = -(1.0d+e) * vDotN;
-		double denominator = (n.dot(n));
-		denominator *= (1.0d/ma + 1.0d/mb);
+		double r1n = r1.cross(n);
+		double r2n = r2.cross(n);
+		double denominator = (mia + mib + r1n*r1n*iIa + r2n*r2n*iIb);
 		double j = numerator/denominator;
-		velocities[polygon1] = va1.add(n.mult(j/ma).mult(1));
-		velocities[polygon2] = vb1.add(n.mult(j/mb).mult(-1));
+		velocities[polygon1] = va1.add(n.mult(j/mia));
+		velocities[polygon2] = vb1.add(n.mult(-j/mib));
+		polygons[polygon1].setRotationalVelocity(wa + j*r1n*iIa);
+		polygons[polygon2].setRotationalVelocity(wb - j*r2n*iIb);
 	}
 	
 	public void calculateSpinX(int polygon1, Vector2d collision, int polygon2) {
@@ -312,7 +315,7 @@ public class PolygonIntersectionTest extends JPanel{
 							collide[j] = true;
 						g.setColor(Color.black);
 						g.drawOval((int)intersect.getX()-5, (int)intersect.getY() - 5, 10, 10);
-						calculateSpinX(i, intersect, j);
+						calculateSpinX2(i, intersect, j);
 						break;
 					}
 				}
