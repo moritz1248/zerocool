@@ -44,6 +44,14 @@ public class Vector2d {
 		Vector2d result = new Vector2d(x * m, y * m);
 		return result;
 	}
+	public double cross(Vector2d cross)
+	{
+		return x*cross.y - y*cross.x;
+	}
+	public Vector2d cross(double w)
+	{
+		return new Vector2d(-w*y,w*x);
+	}
 	public String toString(){
 		return "(" + x + ", " + y + ")";
 	}
