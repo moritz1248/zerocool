@@ -1,3 +1,4 @@
+
 package com.jfysics.examples;
 
 import java.awt.Color;
@@ -51,19 +52,19 @@ public class PolygonIntersectionTest extends JPanel{
 			box_collide[j] = false;
 			collide[j] = false;
 			vectorList = new ArrayList<Vector2d>();
-			vectorList.add(new Vector2d(-20, -20));
+			/*vectorList.add(new Vector2d(-20, -20));
 			vectorList.add(new Vector2d(20, -20));
 			vectorList.add(new Vector2d(20, 20));
-			vectorList.add(new Vector2d(-20, 20));
-			//for(int i = 0; i < 10; i++)
-			//{
-			//	vectorList.add(new Vector2d(Math.cos(Math.toRadians(36 * i)) * (Math.random() * 30 + 5), Math.sin(Math.toRadians(36 * i)) * (Math.random() * 30 + 5)));
-			//}
+			vectorList.add(new Vector2d(-20, 20));*/
+			for(int i = 0; i < 10; i++)
+			{
+				vectorList.add(new Vector2d(Math.cos(Math.toRadians(36 * i)) * (Math.random() * 25 + 10), Math.sin(Math.toRadians(36 * i)) * (Math.random() * 25 + 10)));
+			}
 			colors[j] = new Color((int)(Math.random() * 255), (int)(Math.random() * 255), (int)(Math.random() * 255));
 			velocities[j] = new Vector2d(.5d * Math.cos(Math.random() * 2 * Math.PI),.5d *  Math.sin(Math.random() * 2 * Math.PI));
 			polygons[j] = new RigidPolygon(vectorList);
 			polygons[j].setPosition(new Vector2d(Math.random() * 350 + 50,Math.random() * 350 + 50));
-			polygons[j].setRotationalVelocity(-0.02);
+			polygons[j].setRotationalVelocity(0.04 * Math.random() - .02);
 		}
 		
 		JFrame frame = new JFrame("Line Intersection Example");
@@ -279,8 +280,6 @@ public class PolygonIntersectionTest extends JPanel{
 		g.fillRect(0,0,width,height);
 		for(int i = 0; i < polygonBuffer.length; i++)
 		{
-			if(polygons[i].getRotationalVelocity() != -0.02)
-				System.out.println("WTF " + polygons[i].getRotationalVelocity());
 			
 			polygons[i].setRotation(polygons[i].getRotation() + polygons[i].getRotationalVelocity());
 			polygons[i].setPosition(polygons[i].getPosition().add(velocities[i]));
@@ -292,11 +291,9 @@ public class PolygonIntersectionTest extends JPanel{
 				velocities[i].multX(-1);
 			if(polygons[i].getBounds().collides(b_right))
 				velocities[i].multX(-1);
-			boolean boxIsTouching = false, polyIsTouching = false;
 			for(int j = i; j < polygonBuffer.length; j++)
 				if((i != j) && (polygonBuffer[i].getBounds().collides(polygonBuffer[j].getBounds())))
 				{
-					boxIsTouching = true;
 					box_collide[i] = true;
 					box_collide[j] = true;
 					break;
@@ -316,7 +313,6 @@ public class PolygonIntersectionTest extends JPanel{
 						g.setColor(Color.black);
 						g.drawOval((int)intersect.getX()-5, (int)intersect.getY() - 5, 10, 10);
 						calculateSpinX(i, intersect, j);
-						polyIsTouching = true;
 						break;
 					}
 				}
